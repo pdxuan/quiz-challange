@@ -35,6 +35,12 @@ public class QuizApiFactory : WebApplicationFactory<Program>
 
     public FakeTimeProvider Time { get; init; } = new(StartTime);
 
+    /// <summary>
+    /// 1 lets single-player scenarios start, so a test needs no idle second player that would keep
+    /// questions open; null keeps the shipped minimum (2), which its own tests check.
+    /// </summary>
+    public int? MinPlayersToStart { get; init; } = 1;
+
     public RecordingSessionEvents Events { get; } = new();
 
     public CapturingLoggerProvider Logs { get; } = new();
@@ -55,6 +61,10 @@ public class QuizApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment(Environment);
         builder.UseWebRoot(webRoot);
         builder.UseSetting("ConnectionStrings:Quiz", $"Data Source={DatabasePath}");
+        if (MinPlayersToStart is { } min)
+        {
+            builder.UseSetting("Sessions:MinPlayersToStart", min.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
         builder.UseSetting("Seed:Enabled", "false"); // tests create their own data (TASK.md Assumptions, Seed data)
         builder.ConfigureLogging(logging => logging.AddProvider(Logs));
         builder.ConfigureTestServices(services =>

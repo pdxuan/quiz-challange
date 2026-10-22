@@ -21,7 +21,6 @@ public enum SessionError
     QuizNotFound,
     QuizFinished,
     SessionFull,
-    IsOrganizer,
     NotOrganizer,
     NotInLobby,
     NoPlayers,
@@ -39,7 +38,7 @@ public sealed class SessionException(SessionError error) : Exception(error.ToStr
 }
 
 /// <summary>Settings from configuration, passed in so they are not stored per session.</summary>
-public sealed record SessionRules(int Capacity, TimeSpan RevealDuration);
+public sealed record SessionRules(int Capacity, TimeSpan RevealDuration, int MinPlayersToStart = 2);
 
 public sealed record JoinOutcome(Player Player, bool Rejoined, string? ReplacedConnectionId, bool CanAnswerCurrent);
 

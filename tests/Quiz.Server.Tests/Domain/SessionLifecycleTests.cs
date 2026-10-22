@@ -10,7 +10,7 @@ public class SessionLifecycleTests
     {
         var session = Lobby(2);
 
-        session.Start(Organizer, T0);
+        session.Start(Organizer, T0, Rules);
 
         Assert.Equal(SessionState.Running, session.State);
         Assert.Equal(SessionPhase.Question, session.Phase);
@@ -31,7 +31,7 @@ public class SessionLifecycleTests
     {
         var session = Lobby(1);
 
-        Assert.Equal(SessionError.NotOrganizer, ErrorOf(() => session.Start(User(1), T0)));
+        Assert.Equal(SessionError.NotOrganizer, ErrorOf(() => session.Start(User(1), T0, Rules)));
         Assert.Equal(SessionState.Lobby, session.State);
     }
 
@@ -40,7 +40,7 @@ public class SessionLifecycleTests
     {
         var session = NewSession();
 
-        Assert.Equal(SessionError.NoPlayers, ErrorOf(() => session.Start(Organizer, T0)));
+        Assert.Equal(SessionError.NoPlayers, ErrorOf(() => session.Start(Organizer, T0, Rules)));
     }
 
     [Fact]
@@ -49,8 +49,36 @@ public class SessionLifecycleTests
         var session = Lobby(1);
         session.Disconnect(Conn(1), T0, Rules);
 
-        Assert.Equal(SessionError.NoPlayers, ErrorOf(() => session.Start(Organizer, T0)));
+        Assert.Equal(SessionError.NoPlayers, ErrorOf(() => session.Start(Organizer, T0, Rules)));
         Assert.Equal(SessionState.Lobby, session.State);
+    }
+
+    [Fact]
+    public void Start_WithOneOnlinePlayerWhenTwoAreNeeded_IsNoPlayers()
+    {
+        var session = Lobby(1);
+
+        Assert.Equal(SessionError.NoPlayers, ErrorOf(() => session.Start(Organizer, T0, TwoToStart)));
+        Assert.Equal(SessionState.Lobby, session.State);
+    }
+
+    [Fact]
+    public void Start_WithTwoJoinedButOneOffline_IsNoPlayers()
+    {
+        var session = Lobby(2);
+        session.Disconnect(Conn(2), T0, TwoToStart);
+
+        Assert.Equal(SessionError.NoPlayers, ErrorOf(() => session.Start(Organizer, T0, TwoToStart)));
+    }
+
+    [Fact]
+    public void Start_WithTwoOnlinePlayersWhenTwoAreNeeded_Runs()
+    {
+        var session = Lobby(2);
+
+        session.Start(Organizer, T0, TwoToStart);
+
+        Assert.Equal(SessionState.Running, session.State);
     }
 
     [Fact]
@@ -58,7 +86,7 @@ public class SessionLifecycleTests
     {
         var session = Running(1);
 
-        Assert.Equal(SessionError.NotInLobby, ErrorOf(() => session.Start(Organizer, T0.AddSeconds(1))));
+        Assert.Equal(SessionError.NotInLobby, ErrorOf(() => session.Start(Organizer, T0.AddSeconds(1), Rules)));
     }
 
     [Fact]

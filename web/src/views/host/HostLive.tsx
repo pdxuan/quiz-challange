@@ -3,7 +3,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { api, ApiError } from '../../api/client'
 import type { BoardEntry, PlayerView, WatchSnapshot } from '../../realtime/contracts'
-import { errorMessage, hubErrorCode, useHubFactory, type QuizHubClient } from '../../realtime/hub'
+import { errorMessage, hubErrorCode, MIN_PLAYERS_TO_START, useHubFactory, type QuizHubClient } from '../../realtime/hub'
 import { Countdown, timed, type TimedQuestion } from '../../realtime/Countdown'
 import styles from './Host.module.css'
 
@@ -150,7 +150,7 @@ export function HostLive() {
   }
 
   const count = s.players.length
-  const anyOnline = s.players.some((p) => p.online) // the server starts only with an online player
+  const enoughOnline = s.players.filter((p) => p.online).length >= MIN_PLAYERS_TO_START
   return (
     <section className={`card ${styles.panel}`}>
       <h2 className={styles.title}>Hosting {quizId}</h2>
@@ -177,10 +177,10 @@ export function HostLive() {
                 {quizId}
               </p>
               <div className={styles.startRow}>
-                <button type="button" className={styles.start} onClick={start} disabled={!anyOnline || starting}>
+                <button type="button" className={styles.start} onClick={start} disabled={!enoughOnline || starting}>
                   Start
                 </button>
-                {!anyOnline && <p className="muted">Start opens once a player is online.</p>}
+                {!enoughOnline && <p className="muted">Start opens once two players are online.</p>}
               </div>
               {startError && (
                 <p role="alert" className={styles.error}>

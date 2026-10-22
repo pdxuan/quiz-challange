@@ -99,12 +99,7 @@ public class Session
         {
             throw new SessionException(SessionError.QuizFinished);
         }
-        if (userId == OrganizerUserId)
-        {
-            throw new SessionException(SessionError.IsOrganizer);
-        }
-
-        var player = FindPlayer(userId);
+        var player = FindPlayer(userId); // the organizer may play too, as an ordinary player
         if (player is not null)
         {
             // A second tab replaces the old connection; the same connection joining again replaces nothing.
@@ -133,15 +128,16 @@ public class Session
         return new JoinOutcome(player, Rejoined: false, ReplacedConnectionId: null, CanAnswer(player, now));
     }
 
-    public void Start(Guid userId, DateTimeOffset now)
+    public void Start(Guid userId, DateTimeOffset now, SessionRules rules)
     {
         EnsureOrganizer(userId);
         if (State != SessionState.Lobby)
         {
             throw new SessionException(SessionError.NotInLobby);
         }
-        // Starting with nobody online would finish the quiz at once (the all-offline rule).
-        if (!Players.Any(p => p.Online))
+        // A quiz is a competition, so it needs company; offline players do not count (with nobody
+        // online the quiz would finish at once under the all-offline rule).
+        if (Players.Count(p => p.Online) < Math.Max(1, rules.MinPlayersToStart))
         {
             throw new SessionException(SessionError.NoPlayers);
         }

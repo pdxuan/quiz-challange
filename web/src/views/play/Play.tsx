@@ -1,8 +1,9 @@
 // AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by views/play/Play.test.tsx, mutations (docs/ai-collab/s5.md).
-import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import type { BoardEntry, JoinResult, PlayerQuestionClosed, PlayerQuizFinished } from '../../realtime/contracts'
-import { errorMessage, hubErrorCode, useHubFactory, type QuizHubClient } from '../../realtime/hub'
+import { api, ApiError } from '../../api/client'
+import type { BoardEntry, JoinResult, PlayerView, PlayerQuestionClosed, PlayerQuizFinished } from '../../realtime/contracts'
+import { errorMessage, hubErrorCode, MIN_PLAYERS_TO_START, useHubFactory, type QuizHubClient } from '../../realtime/hub'
 import { Countdown, timed, type TimedQuestion } from '../../realtime/Countdown'
 import styles from './Play.module.css'
 
@@ -11,7 +12,9 @@ interface PlayState {
   lost: boolean
   error: string | null
   notice: string | null
+  isOrganizer: boolean
   playerCount: number
+  players: PlayerView[]
   question: TimedQuestion | null
   canAnswer: boolean
   chosen: string | null
@@ -27,7 +30,8 @@ type Action =
   | { type: 'joined'; result: JoinResult }
   | { type: 'rejected'; message: string }
   | { type: 'lost' }
-  | { type: 'playerJoined'; playerCount: number }
+  | { type: 'playerJoined'; username: string; playerCount: number }
+  | { type: 'onlineChanged'; username: string; online: boolean }
   | { type: 'questionStarted'; question: TimedQuestion }
   | { type: 'chosen'; optionId: string }
   | { type: 'accepted' }
@@ -43,7 +47,9 @@ const initial: PlayState = {
   lost: false,
   error: null,
   notice: null,
+  isOrganizer: false,
   playerCount: 0,
+  players: [],
   question: null,
   canAnswer: false,
   chosen: null,
@@ -65,7 +71,9 @@ function reduce(state: PlayState, action: Action): PlayState {
       return {
         ...state,
         phase: r.state === 'Lobby' ? 'lobby' : question ? 'question' : 'waiting',
+        isOrganizer: r.isOrganizer,
         playerCount: r.playerCount,
+        players: r.players,
         question,
         canAnswer: r.canAnswerCurrent,
         chosen: sameQuestion ? state.chosen : null,
@@ -80,7 +88,15 @@ function reduce(state: PlayState, action: Action): PlayState {
     case 'lost':
       return { ...state, lost: true }
     case 'playerJoined':
-      return { ...state, playerCount: action.playerCount }
+      return {
+        ...state,
+        playerCount: action.playerCount,
+        players: state.players.some((p) => p.username === action.username)
+          ? state.players
+          : [...state.players, { username: action.username, online: true }],
+      }
+    case 'onlineChanged':
+      return { ...state, players: state.players.map((p) => (p.username === action.username ? { ...p, online: action.online } : p)) }
     case 'questionStarted':
       return { ...state, phase: 'question', question: action.question, canAnswer: true, chosen: null, locked: false, notice: null, reveal: null }
     case 'chosen':
@@ -131,7 +147,8 @@ export function Play() {
     live.current = true
     const isLive = () => !disposed
 
-    hub.on('PlayerJoined', (e) => isLive() && dispatch({ type: 'playerJoined', playerCount: e.playerCount }))
+    hub.on('PlayerJoined', (e) => isLive() && dispatch({ type: 'playerJoined', username: e.username, playerCount: e.playerCount }))
+    hub.on('PlayerOnlineChanged', (e) => isLive() && dispatch({ type: 'onlineChanged', username: e.username, online: e.online }))
     hub.on('QuestionStarted', (q) => isLive() && dispatch({ type: 'questionStarted', question: timed(q) }))
     hub.on('QuestionClosed', (e) => isLive() && 'correct' in e && dispatch({ type: 'closed', payload: e }))
     hub.on('QuizFinished', (e) => isLive() && 'rank' in e && dispatch({ type: 'finished', payload: e }))
@@ -175,12 +192,12 @@ export function Play() {
           </button>
         </div>
       )}
-      <PhaseView state={state} onAnswer={answer} />
+      <PhaseView quizId={quizId} state={state} onAnswer={answer} />
     </section>
   )
 }
 
-function PhaseView({ state, onAnswer }: { state: PlayState; onAnswer: (optionId: string) => void }) {
+function PhaseView({ quizId, state, onAnswer }: { quizId: string; state: PlayState; onAnswer: (optionId: string) => void }) {
   switch (state.phase) {
     case 'connecting':
       return <p className="muted">Joining...</p>
@@ -194,14 +211,7 @@ function PhaseView({ state, onAnswer }: { state: PlayState; onAnswer: (optionId:
         </>
       )
     case 'lobby':
-      return (
-        <div className={styles.waiting}>
-          <p className={styles.waitingTitle}>Waiting for the host to start...</p>
-          <p className="muted">
-            {state.playerCount} {state.playerCount === 1 ? 'player' : 'players'} in the lobby
-          </p>
-        </div>
-      )
+      return <Lobby quizId={quizId} state={state} />
     case 'waiting':
       return (
         <>
@@ -226,6 +236,67 @@ function PhaseView({ state, onAnswer }: { state: PlayState; onAnswer: (optionId:
         )
       )
   }
+}
+
+/** Everyone sees who is in; the organizer, who plays too, also gets the quiz ID to share, Start and the full board. */
+function Lobby({ quizId, state }: { quizId: string; state: PlayState }) {
+  const [starting, setStarting] = useState(false)
+  const [startError, setStartError] = useState<string | null>(null)
+  const enough = state.players.filter((p) => p.online).length >= MIN_PLAYERS_TO_START // a hint: the server decides
+
+  async function start() {
+    setStarting(true)
+    setStartError(null)
+    try {
+      await api.startSession(quizId) // QuestionStarted then moves this view on
+    } catch (e) {
+      setStartError(e instanceof ApiError ? errorMessage(e.code) : 'Could not start the quiz.')
+    } finally {
+      setStarting(false)
+    }
+  }
+
+  return (
+    <div className={styles.waiting}>
+      {state.isOrganizer ? (
+        <>
+          <p className="muted">Players join with this quiz ID:</p>
+          <p aria-label="Quiz ID" className={styles.quizId}>
+            {quizId}
+          </p>
+        </>
+      ) : (
+        <p className={styles.waitingTitle}>Waiting for the host to start...</p>
+      )}
+      <p className="muted">
+        {state.playerCount} {state.playerCount === 1 ? 'player' : 'players'} in the lobby
+      </p>
+      <ul aria-label="Players" className={styles.players}>
+        {state.players.map((p) => (
+          <li key={p.username} className={p.online ? undefined : styles.offline}>
+            {p.online ? p.username : `${p.username} (offline)`}
+          </li>
+        ))}
+      </ul>
+      {state.isOrganizer && (
+        <div className={styles.startRow}>
+          <button type="button" className={styles.start} onClick={start} disabled={!enough || starting}>
+            Start
+          </button>
+          {!enough && <p className="muted">Start opens once two players are online.</p>}
+          {/* A new tab: leaving this one would disconnect the organizer as a player. */}
+          <Link to={`/host/${encodeURIComponent(quizId)}`} target="_blank" rel="noopener">
+            Organizer board
+          </Link>
+        </div>
+      )}
+      {startError && (
+        <p role="alert" className={styles.error}>
+          {startError}
+        </p>
+      )}
+    </div>
+  )
 }
 
 const LETTERS = ['A', 'B', 'C', 'D']

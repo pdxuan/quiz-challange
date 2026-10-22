@@ -89,7 +89,7 @@ public class SchemaTests
             var session = Session.Create("ABC234", quizSet, organizer, T0);
             session.Join(alice, "alice", "conn-a", T0, Rules);
             session.Join(bob, "bob", "conn-b", T0, Rules);
-            session.Start(organizer, T0.AddSeconds(1));
+            session.Start(organizer, T0.AddSeconds(1), Rules);
             session.SubmitAnswer(alice, "set-1-q1", "a", submission, T0.AddSeconds(4), T0.AddSeconds(4), Rules);
             db.Sessions.Add(session);
             await db.SaveChangesAsync();

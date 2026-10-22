@@ -79,10 +79,9 @@ const messages: Record<string, string> = {
   QuizNotFound: 'Quiz not found. Check the quiz ID.',
   QuizFinished: 'This quiz has already finished.',
   SessionFull: 'This quiz is full.',
-  IsOrganizer: 'You are the organizer of this quiz. Open it from Host a quiz.',
   NotOrganizer: 'Only the organizer can host this quiz.',
   NotInLobby: 'The quiz has already started.',
-  NoPlayers: 'At least one player must join before you start.',
+  NoPlayers: 'At least two players must be online before you start.',
   NotJoined: 'You have not joined this quiz.',
   NotStarted: 'The quiz has not started yet.',
   NotCurrentQuestion: 'This question is no longer open.',
@@ -92,6 +91,9 @@ const messages: Record<string, string> = {
   Invalid: 'That request was not valid.',
   ServerError: 'Something went wrong on the server. Please try again.',
 }
+
+/** Online players the server needs before Start (Sessions:MinPlayersToStart); the UI only uses it as a hint. */
+export const MIN_PLAYERS_TO_START = 2
 
 /** A readable message for a server error code (hub or REST). */
 export function errorMessage(code: string): string {

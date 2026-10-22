@@ -17,6 +17,7 @@ public class QuizHubTests
 
     private static string Str(JsonElement e, string name) => e.GetProperty(name).GetString()!;
     private static int Int(JsonElement e, string name) => e.GetProperty(name).GetInt32();
+    private static List<string> Names(JsonElement joinResult) => joinResult.GetProperty("players").EnumerateArray().Select(p => Str(p, "username")).ToList();
 
     /// <summary>A Lobby organized by "org" with the named players created (not joined).</summary>
     private static async Task<string> LobbyAsync(QuizApiFactory factory, int questions, params string[] players)
@@ -85,13 +86,40 @@ public class QuizHubTests
     }
 
     [Fact]
-    public async Task JoinQuiz_ByTheOrganizer_FailsWithIsOrganizer()
+    public async Task JoinQuiz_ByTheOrganizer_IsAPlayerAndOnlyTheOrganizerIsToldSo()
     {
         using var factory = new QuizApiFactory();
-        var quizId = await LobbyAsync(factory, 3);
+        var quizId = await LobbyAsync(factory, 3, "bob");
         await using var org = await HubProbe.ConnectAsync(factory, "org");
+        await using var bob = await HubProbe.ConnectAsync(factory, "bob");
 
-        Assert.Equal("IsOrganizer", await org.ErrorOfAsync("JoinQuiz", quizId));
+        var asOrganizer = await org.InvokeAsync("JoinQuiz", quizId);
+        await factory.AdvanceAsync(TimeSpan.FromSeconds(1)); // bob joins later, so he is listed second
+        var asPlayer = await bob.InvokeAsync("JoinQuiz", quizId);
+
+        Assert.True(asOrganizer.GetProperty("isOrganizer").GetBoolean());
+        Assert.False(asPlayer.GetProperty("isOrganizer").GetBoolean());
+        Assert.Equal(["org"], Names(asOrganizer));
+        Assert.Equal(["org", "bob"], Names(asPlayer)); // join order
+        await using var db = factory.CreateDbContext();
+        Assert.Equal(2, await db.Players.CountAsync(p => p.QuizId == quizId));
+    }
+
+    [Fact]
+    public async Task Organizer_PlaysWithAnotherPlayerAndScoresLikeThem()
+    {
+        using var factory = new QuizApiFactory { MinPlayersToStart = null }; // the shipped minimum: two online players
+        var quizId = await LobbyAsync(factory, 1, "bob");
+        await using var org = await JoinedAsync(factory, quizId, "org");
+        await using var bob = await JoinedAsync(factory, quizId, "bob");
+
+        await StartAsync(factory, quizId);
+        var questionId = Str(await org.NextAsync("QuestionStarted"), "questionId");
+        await AnswerAsync(bob, quizId, questionId, "b");
+        await AnswerAsync(org, quizId, questionId, "a"); // both eligible players answered: closes at once
+
+        var closed = await org.NextAsync("QuestionClosed");
+        Assert.Equal((true, 1000, 1), (closed.GetProperty("correct").GetBoolean(), Int(closed, "points"), Int(closed, "rank")));
     }
 
     [Fact]
@@ -475,14 +503,18 @@ public class QuizHubTests
     public async Task JoinQuiz_FailingOnTheOrganizersWatchingConnection_KeepsItInTheSessionGroup()
     {
         using var factory = new QuizApiFactory();
-        var quizId = await LobbyAsync(factory, 1, "alice");
+        var quizId = await LobbyAsync(factory, 1);
+        for (var i = 0; i < 20; i++)
+        {
+            await factory.JoinAsync(quizId, await factory.AddUserAsync($"p{i:D2}"), $"p{i:D2}");
+        }
         await using var org = await HubProbe.ConnectAsync(factory, "org");
         await org.InvokeAsync("WatchQuiz", quizId);
 
-        Assert.Equal("IsOrganizer", await org.ErrorOfAsync("JoinQuiz", quizId));
-        await using var alice = await JoinedAsync(factory, quizId, "alice");
+        Assert.Equal("SessionFull", await org.ErrorOfAsync("JoinQuiz", quizId)); // the organizer takes a seat too
+        await StartAsync(factory, quizId);
 
-        Assert.Equal("alice", Str(await org.NextAsync("PlayerJoined"), "username")); // still watching
+        await org.NextAsync("QuestionStarted"); // still in the session group
     }
 
     [Fact]

@@ -313,7 +313,7 @@ configurable), several concurrent sessions on one node; proven by the server end
 | # | Decision | Choice and why | Reversible | Status |
 |---|----------|----------------|------------|--------|
 | D1 | Results timing and pace | Server-paced questions; a player sees only "answer locked in" until the question closes (all eligible online players answered, or the timer ended); then the correct option, points, total and rank appear. Stops answer leaks between players | two-way before the web client ships; after that a contract change | interviewer |
-| D2 | Identity and auth | Players and organizers log in with seeded users; cookie auth, built in; display name = username; the creator is the organizer and the only one who can start and watch | two-way: rollback = anonymous join by display name (the spec's original design) | interviewer |
+| D2 | Identity and auth | Players and organizers log in with seeded users; cookie auth, built in; display name = username; the creator is the organizer and the only one who can start and watch, and may also play their own quiz (S9) | two-way: rollback = anonymous join by display name (the spec's original design) | interviewer |
 | D3 | Close push shape | Each player gets one personalised `QuestionClosed` (own result + top 10); the organizer gets the full list; during a question only `AnswersCount` is pushed (merged, <= 1 per 200 ms) | two-way: move to broadcast + per-player result if sessions grow (see NFR) | interviewer |
 | D4 | Storage and consistency | All state in SQLite via EF Core with migrations; no in-memory state; an actor per session serialises load-apply-save transactions; running sessions resume after a restart | ONE-WAY (schema and a new dependency): rollback = revert the data slice and delete `App_Data/quiz.db` (dev data only); later schema changes go through new migrations | interviewer |
 | D5 | Hosting, observability, dependencies | One process for the demo: the Vite build is served from `wwwroot` with an SPA fallback; Vite dev proxy for `/api` and `/hubs` in development. Built-in metrics and logs only (D-otel). New packages listed in Assumptions, to approve | two-way | default; dependencies need approval (ONE-WAY flag) |
@@ -361,7 +361,7 @@ Order follows the build order in Goal: core server (R1-R9), web (R10-R12), then 
 | Pace and scoring formula (D-pace, D-score) | Server-paced; correct = `500 + round(500 * remainingMs / limitMs)` with `MidpointRounding.AwayFromZero`, remaining clamped to [0, limit]; wrong or none = 0 | assumed (spec recommendation) |
 | Hosting and observability (D-host, D-otel) | Client built into `wwwroot` for the demo; built-in metrics and logs only | assumed (spec recommendation) |
 | Who may answer a question? | A player who joined before that question started and is online. Late joiners play from the next question; a rejoining player may still answer the current question if they have not answered and it is open | assumed |
-| Can the organizer play their own quiz? | No: `JoinQuiz` by the organizer is rejected with `IsOrganizer` | assumed |
+| Can the organizer play their own quiz? | Yes: they join as an ordinary player (a seat of the 20, ranked and scored like anyone), start from their own lobby and can open the full board | interviewer (S9, was "No" assumed) |
 | Ranking | Standard competition ranking on total points (1, 1, 3); inside a tie, ordered by earliest `reachedAt` (receipt time of the answer that last raised the total), then username | assumed (domain research: the spec's "same time shares rank" never happens in practice) |
 | Deadline boundary | Accept if `receivedAt < PhaseEndsAt`; reject at or after; `receivedAt` is stamped in the hub before enqueueing; no grace period | assumed |
 | Clock skew | `QuestionStarted` carries `endsAt` and `serverNow`; the client counts down from `endsAt - serverNow`; no lead-in delay | assumed |
@@ -386,7 +386,7 @@ REST (all errors are `ProblemDetails`; `401` when not logged in, on every route 
 | GET | `/api/auth/me` | - | 200 `{userId, username}` | 401 |
 | GET | `/api/quiz-sets` | - | 200 `[{id, title, questionCount, timeLimitSec}]` | 401 |
 | POST | `/api/sessions` | `{quizSetId}` | 201 `{quizId}` + Location | 400 validation, 401, 404 quiz set |
-| POST | `/api/sessions/{quizId}/start` | - | 200 `{state: "Running"}` | 401, 403 not the organizer, 404, 409 not in Lobby or no players |
+| POST | `/api/sessions/{quizId}/start` | - | 200 `{state: "Running"}` | 401, 403 not the organizer, 404, 409 not in Lobby, or fewer than 2 online players (`NoPlayers`; `Sessions:MinPlayersToStart`, default 2) |
 | GET | `/api/sessions/{quizId}/leaderboard` | - | 200 `{state, entries: [{rank, username, totalPoints, online}]}` | 401, 404 |
 | GET | `/health` | - | 200 (DB reachable) | 503 |
 
@@ -394,7 +394,7 @@ Hub `/hubs/quiz` (`[Authorize]`), client -> server; errors are `HubException` wi
 
 | Method | Request | Success | Errors (code) |
 |--------|---------|---------|---------------|
-| `JoinQuiz` | `quizId` | `JoinResult(username, state, playerCount, currentQuestion?, canAnswerCurrent, you{totalPoints, rank}, top10)` | `QuizNotFound`, `QuizFinished`, `SessionFull`, `IsOrganizer`, `Invalid` |
+| `JoinQuiz` | `quizId` | `JoinResult(username, isOrganizer, state, playerCount, players[{username, online}] in join order, currentQuestion?, canAnswerCurrent, you{totalPoints, rank}, top10)` | `QuizNotFound`, `QuizFinished`, `SessionFull`, `Invalid` (also: the connection already joined another quiz) |
 | `WatchQuiz` | `quizId` | `WatchSnapshot(state, players[], currentQuestion?, answersCount, leaderboard full)` | `QuizNotFound`, `NotOrganizer` |
 | `SubmitAnswer` | `quizId, questionId, optionId, submissionId` | `AnswerAccepted(questionId, submissionId)`; the same `submissionId` again returns it again | `NotJoined`, `NotStarted`, `NotCurrentQuestion`, `NotEligible`, `QuestionClosed`, `AlreadyAnswered`, `Invalid` (unknown option, empty ids) |
 
@@ -434,12 +434,12 @@ Quiz sets and sessions
 - [ ] AC5: `GET /api/quiz-sets` lists the stored sets without any correct option.
 - [ ] AC6: The seed validator rejects a question without exactly 4 unique options or with an unknown correct option id.
 - [ ] AC7: `POST /api/sessions` stores a Lobby session with a 6-character ID from the allowed alphabet and the caller as organizer, returns 201 + Location; an unknown quiz set returns 404, a missing id 400.
-- [ ] AC8: Start by the organizer with >= 1 player returns 200, stores Running with question 0, and pushes `QuestionStarted` without the correct option; start by another user is 403; start with no players or not in Lobby (incl. a second start) is 409; an unknown ID is 404.
+- [ ] AC8: Start by the organizer with >= 2 online players (the organizer counts when playing) returns 200, stores Running with question 0, and pushes `QuestionStarted` without the correct option; start by another user is 403; start with fewer than 2 online players (`NoPlayers`) or not in Lobby (incl. a second start) is 409; an unknown ID is 404.
 - [ ] AC9: `GET /api/sessions/{quizId}/leaderboard` returns the full ordered list read from SQLite; an unknown ID returns 404.
 
 Joining
 - [ ] AC10: `JoinQuiz` in Lobby stores the player (display name = username), returns `JoinResult`, and pushes `PlayerJoined`; the quiz ID is matched case-insensitively.
-- [ ] AC11: `JoinQuiz` fails with `QuizNotFound` (unknown), `QuizFinished` (finished), `SessionFull` (the 21st distinct user), `IsOrganizer` (the organizer).
+- [ ] AC11: `JoinQuiz` fails with `QuizNotFound` (unknown), `QuizFinished` (finished), `SessionFull` (the 21st distinct user). The organizer joins as an ordinary player and gets `isOrganizer: true` (S9).
 - [ ] AC12: A late join while Running starts at 0 points, gets the current question with `canAnswerCurrent = false`, and answering it fails with `NotEligible`; they can answer the next question.
 - [ ] AC13: The same user joining again (after a disconnect, or from a second tab) is the same player: points kept, online again, still one row and one board entry, the old connection stops receiving events.
 
@@ -471,7 +471,7 @@ Reliability and observability
 Client (Vitest + RTL, hub faked)
 - [ ] AC31: Login form: success navigates to home, a 401 shows "Wrong username or password".
 - [ ] AC32: Player view renders lobby -> question (4 options, countdown from `endsAt - serverNow`) -> locked in (options disabled) -> reveal (correct option, points, total, rank, top 10) -> final; a join error shows its reason; a dropped connection shows "Connection lost" with Rejoin.
-- [ ] AC33: Organizer view shows players joining live, Start enabled only with >= 1 player, answers in / eligible during a question, and the full board and podium at finish.
+- [ ] AC33: Organizer view shows players joining live, Start enabled only with >= 2 online players (also in the organizer's play lobby), answers in / eligible during a question, and the full board and podium at finish.
 
 Seed and end-to-end (built last)
 - [ ] AC34: In Development, an empty DB is seeded with 3 users and 2 quiz sets that pass the seed validator; a non-empty DB is not touched; outside Development nothing is seeded.
