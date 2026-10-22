@@ -5,12 +5,12 @@
 Written by `/intake`, kept current by `/plan`. Always loaded, so keep it to 8 lines; the
 detail lives in docs/TASK.md.
 
-- Goal: TBD (one line: who it is for and what they can do)
-- Stack: TBD
-- Architecture: TBD (style, components, source of truth)
-- Code structure: TBD (one line; full tree and patterns in docs/TASK.md Code structure)
-- Key decisions: TBD (2-3, with the docs/TASK.md Decisions ids)
-- Base branch: TBD (line 1 of `.claude/base-ref`)
+- Goal: Kahoot-style live vocab quiz: a logged-in organizer opens a session, logged-in players join by quiz ID, answer timed questions, see results and the leaderboard at each close.
+- Stack: .NET 10 Minimal API + SignalR + EF Core SQLite, xUnit + WebApplicationFactory + FakeTimeProvider; React 19 + TS + Vite in `web/` (Vitest + RTL).
+- Architecture: one process; SQLite is the source of truth; one actor per session (`Channel<T>`, single reader, no cache) runs load-apply-save per message over a pure `Session` state machine.
+- Code structure: feature folders (`Features/{Auth,QuizSets,Sessions,Play}`) on `Domain/` (pure), `Runtime/` (actors), `Data/` (EF Core), `Seed/`; see docs/TASK.md Code structure.
+- Key decisions: D1 results only at question close; D2 cookie login with seeded users, creator = organizer; D4 all state in SQLite, resume after restart. Build order: core server, web, then seed + E2E.
+- Base branch: main
 
 The current branch, slice status and next slice are printed at session start by the
 `session-context` hook. Before changing code outside a skill, read docs/TASK.md
