@@ -1,0 +1,20 @@
+.panel {
+  max-width: 26rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.form button {
+  justify-self: start;
+  min-width: 8rem;
+}
+
+.error {
+  color: var(--margin);
+  font-weight: 700;
+}

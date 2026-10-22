@@ -1,0 +1,43 @@
+.panel {
+  max-width: 30rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--ink-soft);
+}
+
+.user button {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.95rem;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+/* The quiz ID is read off a projector and typed on a phone: big, spaced, upper case. */
+.form input {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.8rem;
+}
+
+.form button {
+  padding: 0.95rem 1.5rem;
+}
+
+.host {
+  color: var(--ink-soft);
+}

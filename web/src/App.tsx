@@ -1,31 +1,29 @@
-import { Route, Routes, useParams } from 'react-router'
-
-// Route placeholders from the walking skeleton; S5 replaces each with its real view.
-function Placeholder({ title }: { title: string }) {
-  return <h2>{title}</h2>
-}
-
-function HostLive() {
-  const { quizId } = useParams()
-  return <Placeholder title={`Hosting ${quizId}`} />
-}
-
-function Play() {
-  const { quizId } = useParams()
-  return <Placeholder title={`Playing ${quizId}`} />
-}
+import { Link, Route, Routes } from 'react-router'
+import styles from './App.module.css'
+import { Home } from './views/home/Home'
+import { HostLive } from './views/host/HostLive'
+import { HostSetup } from './views/host/HostSetup'
+import { Login } from './views/login/Login'
+import { RequireUser } from './views/login/RequireUser'
+import { Play } from './views/play/Play'
 
 export default function App() {
   return (
-    <main>
-      <h1>Vocabulary Quiz</h1>
-      <Routes>
-        <Route path="/login" element={<Placeholder title="Log in" />} />
-        <Route path="/" element={<Placeholder title="Join a quiz" />} />
-        <Route path="/host" element={<Placeholder title="Host a quiz" />} />
-        <Route path="/host/:quizId" element={<HostLive />} />
-        <Route path="/play/:quizId" element={<Play />} />
-      </Routes>
-    </main>
+    <div className={styles.desk}>
+      <header className={styles.header}>
+        <h1 className={styles.brand}>
+          <Link to="/">Vocabulary Quiz</Link>
+        </h1>
+      </header>
+      <main className={styles.main}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<RequireUser><Home /></RequireUser>} />
+          <Route path="/host" element={<RequireUser><HostSetup /></RequireUser>} />
+          <Route path="/host/:quizId" element={<RequireUser><HostLive /></RequireUser>} />
+          <Route path="/play/:quizId" element={<RequireUser><Play /></RequireUser>} />
+        </Routes>
+      </main>
+    </div>
   )
 }

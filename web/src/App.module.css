@@ -1,0 +1,25 @@
+.desk {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 1rem 1.5rem;
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brand a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.main {
+  flex: 1;
+  padding: 0.5rem 1rem 3rem;
+}

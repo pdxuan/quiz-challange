@@ -87,7 +87,7 @@ non-overlapping files and may run in parallel worktrees.
 
 ### Wave 1 (LEAF)
 
-- [ ] **S5 Web client** - LEAF
+- [x] **S5 Web client** - LEAF
   - Branch: feature/s5-web-client
   - Covers: R10, R11, R12, AC31, AC32, AC33
   - Files: `web/src/api/**`, `web/src/realtime/**` (hub client behind an interface + a fake for tests), `web/src/views/{login,home,host,play}/**` with CSS Modules, `web/src/App.tsx` (fills the S0 route placeholders), `web/src/**/*.test.tsx`; `docs/ai-collab/s5.md`
@@ -96,7 +96,7 @@ non-overlapping files and may run in parallel worktrees.
   - Wave: 1, in parallel with S6
   - Tests (Vitest + RTL, fake hub and fake fetch): login success navigates home, 401 shows "Wrong username or password" (AC31); player view lobby -> question with 4 options and countdown from `endsAt - serverNow` -> locked in with options disabled -> reveal with correct option, points, total, rank, top 10 -> final; join error shows its reason; dropped connection shows "Connection lost" with Rejoin (AC32); organizer view shows players joining, Start enabled only with >= 1 player, answers in / eligible, full board and podium at finish (AC33)
   - Done when: the test command is green; `npm --prefix web run build` writes to `wwwroot`; one manual run (organizer + 2 players in separate browser profiles) is recorded in `docs/ai-collab/s5.md`.
-  - Decision: (written while building, if any)
+  - Decision: every logged-in route (`/`, `/host`, `/host/:quizId`, `/play/:quizId`) goes through `RequireUser` (`GET /api/auth/me`, 401 -> `/login`); the organizer view also shows "Connection lost" with Rejoin (calls `WatchQuiz` again); hub error codes map to readable text in `web/src/realtime/hub.ts`; test fakes (`fakeFetch`, `fakeHub`) live next to the code they replace and are not bundled. Review fixes (interviewer): Start needs an online player; only `Invalid`/`ServerError` let a player pick again; `Countdown` moved to `web/src/realtime/`; R14 markers on the web files. Visual redesign (interviewer chose the "index card" direction): tokens and base styles in `web/src/styles/global.css`, Google Fonts (Bricolage Grotesque, Atkinson Hyperlegible) linked in `web/index.html`; no new package.
 
 - [ ] **S6 Quiz sets, seed, end-to-end and docs** - LEAF
   - Branch: feature/s6-seed-e2e-docs

@@ -1,0 +1,20 @@
+.timer {
+  min-width: 4.5rem;
+  padding: 0.2rem 0.85rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* The last seconds switch to the card's margin red. */
+.timer[data-low] {
+  border-color: var(--margin);
+  background: var(--margin);
+  color: var(--paper);
+}
