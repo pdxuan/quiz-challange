@@ -25,9 +25,30 @@ recorded on a temporary database whose quiz sets were cut to 5 questions.
 
 ## How to run
 
+### Without installing .NET or Node
+
+- **Prebuilt build** (Windows x64, Linux x64, macOS Apple silicon): download it from the
+  [demo-v1 release](https://github.com/pdxuan/quiz-challange/releases/tag/demo-v1), unpack it
+  and run `start.cmd` (Windows) or `./start.sh` (Linux, macOS), then open http://localhost:5080.
+  The macOS build is unsigned: if macOS blocks it, run
+  `xattr -dr com.apple.quarantine vocab-quiz-osx-arm64` once.
+- **Docker**: from a clone of this repo,
+
+  ```
+  docker compose up --build
+  ```
+
+  then open http://localhost:5080. The SQLite file and the login-cookie keys are kept in the
+  `quiz-data` volume; `docker compose down -v` starts from scratch.
+
+Both run in demo mode (Development: the dev users below and 2 quiz sets are seeded, Swagger UI
+at http://localhost:5080/swagger).
+
+### From source
+
 Prerequisites: .NET SDK 10, Node 24 (npm 11).
 
-### Server
+#### Server
 
 ```
 dotnet run --project src/Quiz.Server --launch-profile http
@@ -46,7 +67,7 @@ seeds 2 quiz sets ("Everyday words", "Travel words") and 3 dev users:
 Swagger UI: http://localhost:5080/swagger. Health: http://localhost:5080/health.
 To start from scratch, stop the server and delete `src/Quiz.Server/App_Data/quiz.db`.
 
-### Web client
+#### Web client
 
 Either run the Vite dev server (proxies `/api` and `/hubs` to the server on port 5080):
 

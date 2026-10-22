@@ -493,7 +493,7 @@ Seed and end-to-end (built last)
 - Shuffled option order per player and generated distractors - fixed options are enough for the MVP.
 - Nickname filtering - names are seeded usernames.
 - A per-connection answer rate limiter - one answer per question plus SignalR's default of one invocation at a time per client already bounds it.
-- Quiz authoring, free-text answers, mobile apps, i18n, browser E2E tests (Playwright), Docker.
+- Quiz authoring, free-text answers, mobile apps, i18n, browser E2E tests (Playwright). (Docker was added later for reviewers: S10 in docs/PLAN.md.)
 - SignalR `withAutomaticReconnect` / stateful reconnect - rejoin is an explicit `JoinQuiz` by the same user.
 
 ## Safety

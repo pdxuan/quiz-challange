@@ -147,6 +147,16 @@ merged. S0-S4 run one at a time in the main session (about 25 + 25 + 25 + 30 + 4
   - Done when: the test command is green; one manual run: alice creates and plays with bob, Start from `/play`.
   - Decision: interviewer, 2026-10-22: the creator is also an ordinary player (a seat of the 20). `IsOrganizer` is removed from `SessionError`, the Contract and the web messages; `JoinResult` gains `isOrganizer` and `players` (additive). Everyone in the lobby sees the names (the interviewer asked for names; a player list is harmless and matches Kahoot). Players are ordered by `JoinedAt`, then name, since the database returns them in key order. The "Organizer board" link opens a new tab, since leaving the play tab would take the organizer offline as a player (review Should). Interviewer, 2026-10-22: Start needs at least 2 online players (the organizer counts when playing), from `Sessions:MinPlayersToStart` (default 2) passed in `SessionRules`; `NoPlayers` keeps its code with a new message. Test hosts set it to 1 (`DomainBuilders.Rules`, `QuizApiFactory.MinPlayersToStart`), so the ~40 single-player scenarios need no idle second player that would keep questions open; the shipped value has its own domain, API and hub tests. Rollback: revert the PR; no schema or data change.
 
+- [x] **S10 Run with Docker** - TRUNK (new build files at the repo root)
+  - Branch: feature/s10-docker
+  - Covers: interviewer request 2026-10-22 (reviewers run it without installing .NET or Node); no AC change
+  - Files: `Dockerfile`, `.dockerignore`, `compose.yaml`, `README.md` (How to run: prebuilt builds and Docker)
+  - Read first: `web/vite.config.ts` (build outDir), `Data/DataExtensions.cs` (`App_Data/quiz.db`), `Seed/DevSeeder.cs` (seed folder under the content root)
+  - Depends on: S9
+  - Tests: no automated test (no code change); checked by hand: `docker compose up --build`, then health, web client, Swagger and real REST + SignalR calls (one question played), the 3 host names, a non-root user, and the board kept after `docker compose restart` (volume).
+  - Done when: the test command is green; the image builds and the checks above pass.
+  - Decision: interviewer, 2026-10-22: one multi-stage image (node:24-alpine builds the web, dotnet/sdk:10.0 publishes, dotnet/aspnet:10.0 runs as the image's non-root user) in demo mode (Development: seeded users, Swagger); SQLite and the Data Protection keys (`HOME`) in a named volume on `/app/App_Data`, so logins survive a recreated container; `docs/TASK.md` Not building no longer lists Docker. The prebuilt self-contained builds (win-x64, linux-x64, osx-arm64) are release assets of `demo-v1`, not repo files. Rollback: revert the PR.
+
 ## Decisions
 
 Written by `/plan` only. A decision made while building goes into that slice's block.
