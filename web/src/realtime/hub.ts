@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by the view tests (error codes) and a manual run (docs/ai-collab/s5.md).
 import { createContext, useContext } from 'react'
 import { HubConnectionBuilder, type HubConnection } from '@microsoft/signalr'
 import type { AnswerAccepted, HubEventName, HubEvents, JoinResult, WatchSnapshot } from './contracts'

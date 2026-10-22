@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by server PlayContracts.cs and the view tests (docs/ai-collab/s5.md).
 // The hub contract (docs/TASK.md Contract; server: Features/Play/PlayContracts.cs, camelCase JSON).
 
 export interface OptionView {

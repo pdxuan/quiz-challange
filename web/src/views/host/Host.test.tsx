@@ -121,11 +121,21 @@ describe('Organizer live view (AC33)', () => {
     expect(calls.filter((c) => c.path === '/api/sessions/ABC234/start')).toHaveLength(1)
   })
 
+  it('keeps Start disabled while every player is offline (the server needs one online)', async () => {
+    const { hub } = renderApp('/host/ABC234', {}, watching(snapshot({ players: [{ username: 'bob', online: false }] })))
+
+    const start = (await screen.findByRole('button', { name: 'Start' })) as HTMLButtonElement
+    expect(start.disabled).toBe(true)
+
+    act(() => hub.emit('PlayerOnlineChanged', { username: 'bob', online: true }))
+    expect(start.disabled).toBe(false)
+  })
+
   it('shows the reason when Start is rejected', async () => {
     renderApp(
       '/host/ABC234',
       { 'POST /api/sessions/ABC234/start': { status: 409, body: { title: 'NoPlayers', status: 409 } } },
-      watching(snapshot({ players: [{ username: 'bob', online: false }] })),
+      watching(snapshot({ players: [{ username: 'bob', online: true }] })), // e.g. bob left just before the click
     )
     const user = userEvent.setup()
 

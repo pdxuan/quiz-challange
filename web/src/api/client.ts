@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by views/login/Login.test.tsx, views/host/Host.test.tsx (docs/ai-collab/s5.md).
 // REST client for the server (docs/TASK.md Contract). Same origin: the auth cookie goes along.
 
 export interface User {

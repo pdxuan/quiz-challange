@@ -190,6 +190,37 @@ describe('Player view (AC32)', () => {
     expect((await screen.findByRole('alert')).textContent).toBe("Time's up for this question.")
   })
 
+  it.each(['QuestionClosed', 'AlreadyAnswered', 'NotEligible', 'NotCurrentQuestion'])(
+    'keeps the options disabled after a final rejection (%s)',
+    async (code) => {
+      const hub = new FakeQuizHub()
+      hub.joinReply = () => Promise.resolve(lobby({ state: 'Running', currentQuestion: question(), canAnswerCurrent: true }))
+      hub.submitReply = () => Promise.reject(hubError(code))
+      renderPlay(hub)
+      const user = userEvent.setup()
+
+      await user.click(await screen.findByRole('button', { name: 'cat' }))
+      await screen.findByRole('alert')
+
+      for (const name of ['cat', 'dog', 'bird', 'fish']) {
+        expect((screen.getByRole('button', { name }) as HTMLButtonElement).disabled).toBe(true)
+      }
+    },
+  )
+
+  it('lets the player try again after a retryable rejection (ServerError)', async () => {
+    const hub = new FakeQuizHub()
+    hub.joinReply = () => Promise.resolve(lobby({ state: 'Running', currentQuestion: question(), canAnswerCurrent: true }))
+    hub.submitReply = () => Promise.reject(hubError('ServerError'))
+    renderPlay(hub)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: 'cat' }))
+    await screen.findByRole('alert')
+
+    expect((screen.getByRole('button', { name: 'dog' }) as HTMLButtonElement).disabled).toBe(false)
+  })
+
   it.each([
     ['QuizNotFound', 'Quiz not found. Check the quiz ID.'],
     ['QuizFinished', 'This quiz has already finished.'],

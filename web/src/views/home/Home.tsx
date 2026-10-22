@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by views/home/Home.test.tsx (docs/ai-collab/s5.md).
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { api } from '../../api/client'

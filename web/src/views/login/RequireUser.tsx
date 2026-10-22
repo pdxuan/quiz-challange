@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by views/login/Login.test.tsx (docs/ai-collab/s5.md).
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router'
 import { api, ApiError, type User } from '../../api/client'

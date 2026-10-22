@@ -1,6 +1,7 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by views/play/Play.test.tsx (skewed clock), mutations (docs/ai-collab/s5.md).
 import { useEffect, useState } from 'react'
-import type { QuestionView } from '../../realtime/contracts'
-import styles from './Play.module.css'
+import type { QuestionView } from './contracts'
+import styles from './Countdown.module.css'
 
 /** A question with its local deadline, fixed when the question was received. */
 export interface TimedQuestion extends QuestionView {

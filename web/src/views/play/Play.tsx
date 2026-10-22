@@ -1,8 +1,9 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by views/play/Play.test.tsx, mutations (docs/ai-collab/s5.md).
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { Link, useParams } from 'react-router'
 import type { BoardEntry, JoinResult, PlayerQuestionClosed, PlayerQuizFinished } from '../../realtime/contracts'
 import { errorMessage, hubErrorCode, useHubFactory, type QuizHubClient } from '../../realtime/hub'
-import { Countdown, timed, type TimedQuestion } from './Countdown'
+import { Countdown, timed, type TimedQuestion } from '../../realtime/Countdown'
 import styles from './Play.module.css'
 
 interface PlayState {
@@ -30,9 +31,12 @@ type Action =
   | { type: 'questionStarted'; question: TimedQuestion }
   | { type: 'chosen'; optionId: string }
   | { type: 'accepted' }
-  | { type: 'answerRejected'; message: string }
+  | { type: 'answerRejected'; message: string; retry: boolean }
   | { type: 'closed'; payload: PlayerQuestionClosed }
   | { type: 'finished'; payload: PlayerQuizFinished }
+
+/** Rejections after which the player may pick again; every other code is final for the question. */
+const RETRYABLE = new Set(['Invalid', 'ServerError'])
 
 const initial: PlayState = {
   phase: 'connecting',
@@ -84,7 +88,8 @@ function reduce(state: PlayState, action: Action): PlayState {
     case 'accepted':
       return { ...state, locked: true }
     case 'answerRejected':
-      return { ...state, chosen: null, notice: action.message }
+      // A final rejection (closed, already answered, ...) keeps the options locked; only a retryable one frees them.
+      return { ...state, chosen: action.retry ? null : state.chosen, notice: action.message }
     case 'closed':
       return { ...state, phase: 'reveal', reveal: action.payload, notice: null, you: { totalPoints: action.payload.totalPoints, rank: action.payload.rank }, top10: action.payload.top10 }
     case 'finished':
@@ -149,7 +154,8 @@ export function Play() {
       await hub.submitAnswer(quizId, question.questionId, optionId, crypto.randomUUID())
       if (live.current) dispatch({ type: 'accepted' })
     } catch (error) {
-      if (live.current) dispatch({ type: 'answerRejected', message: errorMessage(hubErrorCode(error)) })
+      const code = hubErrorCode(error)
+      if (live.current) dispatch({ type: 'answerRejected', message: errorMessage(code), retry: RETRYABLE.has(code) })
     }
   }
 

@@ -1,9 +1,10 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by views/host/Host.test.tsx, mutations (docs/ai-collab/s5.md).
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { api, ApiError } from '../../api/client'
 import type { BoardEntry, PlayerView, WatchSnapshot } from '../../realtime/contracts'
 import { errorMessage, hubErrorCode, useHubFactory, type QuizHubClient } from '../../realtime/hub'
-import { Countdown, timed, type TimedQuestion } from '../play/Countdown'
+import { Countdown, timed, type TimedQuestion } from '../../realtime/Countdown'
 import styles from './Host.module.css'
 
 interface HostState {
@@ -149,6 +150,7 @@ export function HostLive() {
   }
 
   const count = s.players.length
+  const anyOnline = s.players.some((p) => p.online) // the server starts only with an online player
   return (
     <section className={styles.panel}>
       <h2>Hosting {quizId}</h2>
@@ -174,7 +176,7 @@ export function HostLive() {
               <p aria-label="Quiz ID" className={styles.quizId}>
                 {quizId}
               </p>
-              <button type="button" onClick={start} disabled={count === 0 || starting}>
+              <button type="button" onClick={start} disabled={!anyOnline || starting}>
                 Start
               </button>
               {startError && (

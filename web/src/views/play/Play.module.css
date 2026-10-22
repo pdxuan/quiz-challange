@@ -7,12 +7,6 @@
   margin: 0.5rem 0;
 }
 
-.timer {
-  font-size: 1.5rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: bold;
-}
-
 .options {
   display: grid;
   grid-template-columns: 1fr 1fr;

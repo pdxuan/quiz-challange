@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S5; reviewed by a reviewer agent and a human; verified by views/host/Host.test.tsx (docs/ai-collab/s5.md).
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { api, ApiError, type QuizSetSummary } from '../../api/client'
