@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+**/node_modules/
+web/dist/
+src/Quiz.Server/wwwroot/
+src/Quiz.Server/App_Data/
+**/*.db
+**/*.db-shm
+**/*.db-wal
+.git/
+.github/
+.claude/
+.vs/
+.idea/
+docs/
+tests/

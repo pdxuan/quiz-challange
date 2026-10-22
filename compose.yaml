@@ -1,0 +1,12 @@
+# docker compose up --build   -> http://localhost:5080 (demo mode: seeded users, Swagger UI)
+services:
+  quiz:
+    build: .
+    image: vocab-quiz
+    ports:
+      - "5080:8080"
+    volumes:
+      - quiz-data:/app/App_Data
+
+volumes:
+  quiz-data:
