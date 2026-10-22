@@ -1,0 +1,55 @@
+# CI: the same test command the local test-gate hook runs, on a clean machine.
+# The hook proves tests pass on my machine; this proves they pass anywhere.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        if: hashFiles('**/*.csproj') != ''
+        with:
+          dotnet-version: |
+            9.0.x
+            10.0.x
+
+      - uses: actions/setup-node@v4
+        if: hashFiles('**/package.json') != ''
+        with:
+          node-version: '22'
+
+      - name: Install frontend dependencies
+        if: hashFiles('web/package-lock.json') != ''
+        working-directory: web
+        run: npm ci
+
+      - name: Tests (.claude/test-cmd)
+        run: |
+          cmd="$(head -1 .claude/test-cmd | tr -d '\r')"
+          if [ -z "$cmd" ] || [ "$cmd" = "TBD" ]; then
+            # Before S0 (kit baseline, chore/plan PR) there is no code to test yet.
+            code=$(git ls-files '*.csproj' '*package.json' | head -1)
+            if [ "${{ github.event_name }}" = "push" ] || [ -z "$code" ]; then
+              echo "::warning::.claude/test-cmd is TBD and there is no code yet (before S0)"; exit 0
+            fi
+            echo "::error::.claude/test-cmd is TBD - S0 should have set the test command"
+            exit 1
+          fi
+          echo "Running: $cmd"
+          bash -c "$cmd"
+
+      - name: Frontend build and tests
+        if: hashFiles('web/package.json') != ''
+        working-directory: web
+        run: |
+          npm run build --if-present
+          npm test --if-present

@@ -1,0 +1,3 @@
+# Gitignored files to copy into new worktrees (claude -w fallback).
+.env
+.claude/settings.local.json

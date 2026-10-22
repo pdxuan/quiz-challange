@@ -1,0 +1,9 @@
+# TRUNK files: shared code that workers in a worktree may not edit.
+# Written by /plan (and /intake for an existing repo). One glob per line.
+**/Program.cs
+**/*.csproj
+**/*.sln
+**/*.slnx
+package.json
+.claude/**
+.github/**

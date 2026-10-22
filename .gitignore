@@ -1,0 +1,15 @@
+bin/
+obj/
+node_modules/
+.vs/
+.idea/
+*.user
+.env
+.env.*
+.claude/settings.local.json
+.claude/worktrees/
+*.db
+*.db-shm
+*.db-wal
+.claude/base-ref
+docs/prototype/

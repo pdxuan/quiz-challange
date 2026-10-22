@@ -1,0 +1,124 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(dotnet build)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet test)",
+      "Bash(dotnet run *)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet restore)",
+      "Bash(dotnet new *)",
+      "Bash(npm test *)",
+      "Bash(npm test)",
+      "Bash(npm run *)",
+      "Bash(npm ci *)",
+      "Bash(npm ci)",
+      "Bash(git status *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch --show-current)",
+      "Bash(git rev-parse *)",
+      "Bash(git worktree list *)",
+      "Bash(git worktree list)",
+      "Bash(git add *)",
+      "Bash(git apply *)",
+      "Bash(curl *)",
+      "Bash(dotnet add * reference *)",
+      "Bash(dotnet sln *)",
+      "Bash(git restore --staged *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr view *)",
+      "Bash(gh run view *)",
+      "Bash(git remote get-url *)",
+      "Bash(git ls-remote *)",
+      "Bash(git commit *)",
+      "Bash(gh auth status *)",
+      "Bash(gh auth status)",
+      "Bash(git branch -d *)",
+      "Bash(git branch --list *)",
+      "Bash(git fetch origin)",
+      "Bash(git fetch origin *)",
+      "Bash(git switch *)",
+      "Bash(git pull --ff-only)",
+      "Bash(git pull --ff-only *)",
+      "Bash(gh pr list *)",
+      "Bash(git rev-list *)",
+      "Bash(git merge-base *)",
+      "WebSearch",
+      "Bash(git push -u origin *)",
+      "Bash(git push origin *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr edit *)",
+      "Bash(git merge origin/*)",
+      "Bash(git merge --abort)",
+      "Bash(git cherry-pick *)",
+      "Bash(git worktree remove --force *.claude/worktrees/*)"
+    ],
+    "ask": [
+      "Bash(git reset *)",
+      "Bash(git rebase *)",
+      "Bash(gh repo create *)",
+      "Bash(npm install *)",
+      "Bash(npm i *)",
+      "Bash(dotnet add package *)",
+      "Bash(dotnet add * package *)",
+      "Bash(gh api *)",
+      "Bash(git switch -C *)",
+      "Bash(git switch -f *)",
+      "Bash(git switch --force *)",
+      "Bash(git switch --discard-changes *)",
+      "Bash(git merge --no-ff *)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push --force-with-lease *)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(gh pr merge *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git *)",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/test-gate.sh\"",
+            "timeout": 300
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/trunk-guard.ps1\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-context.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "worktree": {
+    "baseRef": "head"
+  }
+}
