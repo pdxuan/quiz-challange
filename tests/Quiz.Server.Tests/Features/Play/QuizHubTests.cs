@@ -402,6 +402,38 @@ public class QuizHubTests
     }
 
     [Fact]
+    public async Task JoinQuiz_ASecondQuizOnTheSameConnection_FailsWithInvalidAndTheFirstQuizStillSeesTheDisconnect()
+    {
+        using var factory = new QuizApiFactory();
+        var quizA = await LobbyAsync(factory, 3, "alice");
+        var (quizB, _) = await factory.AddLobbyAsync(3, organizer: "org2");
+        var alice = await JoinedAsync(factory, quizA, "alice");
+        await using var org = await HubProbe.ConnectAsync(factory, "org");
+        await org.InvokeAsync("WatchQuiz", quizA);
+        await StartAsync(factory, quizA);
+
+        Assert.Equal("Invalid", await alice.ErrorOfAsync("JoinQuiz", quizB));
+        await alice.DisposeAsync();
+
+        await org.NextAsync("QuizFinished"); // the only player of A went offline (AC24)
+        await using var db = factory.CreateDbContext();
+        Assert.Equal(SessionState.Finished, (await db.Sessions.SingleAsync(s => s.QuizId == quizA)).State);
+        Assert.Equal(0, await db.Players.CountAsync(p => p.QuizId == quizB));
+    }
+
+    [Fact]
+    public async Task JoinQuiz_TheSameQuizAgainOnTheSameConnection_IsTheSamePlayer()
+    {
+        using var factory = new QuizApiFactory();
+        var quizId = await LobbyAsync(factory, 3, "alice");
+        await using var alice = await JoinedAsync(factory, quizId, "alice");
+
+        var again = await alice.InvokeAsync("JoinQuiz", quizId.ToLowerInvariant());
+
+        Assert.Equal(1, Int(again, "playerCount"));
+    }
+
+    [Fact]
     public async Task WatchQuiz_ByTheOrganizer_ReturnsASnapshotInEveryState()
     {
         using var factory = new QuizApiFactory();
