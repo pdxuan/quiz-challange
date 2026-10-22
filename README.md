@@ -10,6 +10,19 @@ a small React client.
 - How the AI was used: [docs/AI-COLLABORATION.md](docs/AI-COLLABORATION.md)
 - How the agent works in this repo: `CLAUDE.md` and `.claude/`
 
+## Demo
+
+Three players in three browser windows at once: alice (left, the organizer, who also plays),
+bob and carol. alice opens a session, the others join with the quiz ID, alice starts, everyone
+answers, and each question ends with the correct answer, points, rank and the top 10.
+
+![End-to-end demo: alice, bob and carol play one quiz](docs/demo/end-to-end.gif)
+
+Full recording (60 s, mp4):
+[vocab-quiz-end-to-end-demo.mp4](https://github.com/pdxuan/quiz-challange/releases/download/demo-v1/vocab-quiz-end-to-end-demo.mp4)
+(release [demo-v1](https://github.com/pdxuan/quiz-challange/releases/tag/demo-v1)). It was
+recorded on a temporary database whose quiz sets were cut to 5 questions.
+
 ## How to run
 
 Prerequisites: .NET SDK 10, Node 24 (npm 11).
@@ -50,8 +63,12 @@ npm --prefix web run build
 dotnet run --project src/Quiz.Server --launch-profile http
 ```
 
-Try it: log in as `alice` in one browser and create a session from a quiz set; log in as `bob`
-and `carol` in two other browsers (or private windows), join with the quiz ID, then start.
+Try it: log in as `alice` and open a session from a quiz set. alice lands in her own lobby (she
+plays too) with the quiz ID, a Start button and an "Organizer board" link (full board, new tab).
+Log in as `bob` and `carol`, join with the quiz ID; Start opens once two players are online.
+
+The login cookie belongs to the host name, so one browser can hold three users at once:
+alice on http://localhost:5080, bob on http://127.0.0.1:5080, carol on http://[::1]:5080.
 
 ### Tests
 
@@ -65,6 +82,26 @@ Server tests run the real server in memory, each on its own SQLite file with a f
 including the end-to-end tests in `tests/Quiz.Server.Tests/EndToEnd` (20 players in one quiz;
 3 sessions of 20 players at once). Their run times are printed with
 `dotnet test Quiz.slnx --filter FullyQualifiedName~EndToEnd --logger "console;verbosity=detailed"`.
+
+### Final evidence run
+
+What was run for the Status table in [docs/TASK.md](docs/TASK.md#status), on 2026-10-22:
+
+```
+dotnet test Quiz.slnx && npm --prefix web test -- --run   # 216 + 37 passed, 0 skipped
+npm --prefix web run build
+dotnet run --project src/Quiz.Server --launch-profile http
+```
+
+Then real HTTP and SignalR calls against http://localhost:5080 (a Node script with
+`@microsoft/signalr`): login (wrong password 401, alice and bob 200), quiz sets (anonymous 401,
+logged in 200), create a session (201), alice and bob `JoinQuiz` (bob with the lowercase ID),
+start with one player (409 `NoPlayers`) and with two (200), `QuestionStarted` without the
+correct option, both answer (`AnswerAccepted`), a late answer (`QuestionClosed`), each player's
+own `QuestionClosed`, `WatchQuiz` by bob (`NotOrganizer`), the leaderboard (200) and an unknown
+quiz (404). `/openapi/v1.json` lists every REST endpoint of the Contract with its status codes
+(`/health` is a health check, not in the document). After a restart on the same database the
+leaderboard of that quiz still returned alice's points.
 
 ### Metrics
 

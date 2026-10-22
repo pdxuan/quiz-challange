@@ -422,61 +422,61 @@ Each line becomes at least one test.
 
 Data and auth
 Skeleton
-- [ ] AC37: In Development `/openapi/v1.json` returns 200 and `/swagger` serves the UI; outside Development both return 404.
-- [ ] AC38: A non-API path (e.g. `/play/ABC234`) returns the SPA `index.html` from `wwwroot`; unknown `/api/...` paths still return 404.
+- [x] AC37: In Development `/openapi/v1.json` returns 200 and `/swagger` serves the UI; outside Development both return 404.
+- [x] AC38: A non-API path (e.g. `/play/ABC234`) returns the SPA `index.html` from `wwwroot`; unknown `/api/...` paths still return 404.
 
-- [ ] AC1: On startup the server applies migrations to the configured SQLite file and sets WAL mode; `GET /health` returns 200 when the DB is reachable.
-- [ ] AC2: Login with an existing username (case-insensitive) and the right password returns 200 with the username and sets the auth cookie; `GET /api/auth/me` then returns that user.
-- [ ] AC3: A wrong password or unknown user returns 401 ProblemDetails; an empty username or password returns 400 validation.
-- [ ] AC4: Session endpoints, quiz sets and the hub reject an anonymous caller (401 / connection refused).
+- [x] AC1: On startup the server applies migrations to the configured SQLite file and sets WAL mode; `GET /health` returns 200 when the DB is reachable.
+- [x] AC2: Login with an existing username (case-insensitive) and the right password returns 200 with the username and sets the auth cookie; `GET /api/auth/me` then returns that user.
+- [x] AC3: A wrong password or unknown user returns 401 ProblemDetails; an empty username or password returns 400 validation.
+- [x] AC4: Session endpoints, quiz sets and the hub reject an anonymous caller (401 / connection refused).
 
 Quiz sets and sessions
-- [ ] AC5: `GET /api/quiz-sets` lists the stored sets without any correct option.
-- [ ] AC6: The seed validator rejects a question without exactly 4 unique options or with an unknown correct option id.
-- [ ] AC7: `POST /api/sessions` stores a Lobby session with a 6-character ID from the allowed alphabet and the caller as organizer, returns 201 + Location; an unknown quiz set returns 404, a missing id 400.
-- [ ] AC8: Start by the organizer with >= 2 online players (the organizer counts when playing) returns 200, stores Running with question 0, and pushes `QuestionStarted` without the correct option; start by another user is 403; start with fewer than 2 online players (`NoPlayers`) or not in Lobby (incl. a second start) is 409; an unknown ID is 404.
-- [ ] AC9: `GET /api/sessions/{quizId}/leaderboard` returns the full ordered list read from SQLite; an unknown ID returns 404.
+- [x] AC5: `GET /api/quiz-sets` lists the stored sets without any correct option.
+- [x] AC6: The seed validator rejects a question without exactly 4 unique options or with an unknown correct option id.
+- [x] AC7: `POST /api/sessions` stores a Lobby session with a 6-character ID from the allowed alphabet and the caller as organizer, returns 201 + Location; an unknown quiz set returns 404, a missing id 400.
+- [x] AC8: Start by the organizer with >= 2 online players (the organizer counts when playing) returns 200, stores Running with question 0, and pushes `QuestionStarted` without the correct option; start by another user is 403; start with fewer than 2 online players (`NoPlayers`) or not in Lobby (incl. a second start) is 409; an unknown ID is 404.
+- [x] AC9: `GET /api/sessions/{quizId}/leaderboard` returns the full ordered list read from SQLite; an unknown ID returns 404.
 
 Joining
-- [ ] AC10: `JoinQuiz` in Lobby stores the player (display name = username), returns `JoinResult`, and pushes `PlayerJoined`; the quiz ID is matched case-insensitively.
-- [ ] AC11: `JoinQuiz` fails with `QuizNotFound` (unknown), `QuizFinished` (finished), `SessionFull` (the 21st distinct user). The organizer joins as an ordinary player and gets `isOrganizer: true` (S9).
-- [ ] AC12: A late join while Running starts at 0 points, gets the current question with `canAnswerCurrent = false`, and answering it fails with `NotEligible`; they can answer the next question.
-- [ ] AC13: The same user joining again (after a disconnect, or from a second tab) is the same player: points kept, online again, still one row and one board entry, the old connection stops receiving events.
+- [x] AC10: `JoinQuiz` in Lobby stores the player (display name = username), returns `JoinResult`, and pushes `PlayerJoined`; the quiz ID is matched case-insensitively.
+- [x] AC11: `JoinQuiz` fails with `QuizNotFound` (unknown), `QuizFinished` (finished), `SessionFull` (the 21st distinct user). The organizer joins as an ordinary player and gets `isOrganizer: true` (S9).
+- [x] AC12: A late join while Running starts at 0 points, gets the current question with `canAnswerCurrent = false`, and answering it fails with `NotEligible`; they can answer the next question.
+- [x] AC13: The same user joining again (after a disconnect, or from a second tab) is the same player: points kept, online again, still one row and one board entry, the old connection stops receiving events.
 
 Answering and scoring
-- [ ] AC14: A correct answer received with `remaining` ms left earns `500 + round(500 * remaining / limit)` (away from zero); wrong or no answer earns 0; tested at full time, mid-time with a .5 case, and 1 ms left.
-- [ ] AC15: `SubmitAnswer` returns only `AnswerAccepted` (no correctness or points), the `Answers` row and the new `Players.TotalPoints` are committed before the reply, and `AnswersCount` is pushed at most once per 200 ms.
-- [ ] AC16: An answer received at or after the deadline (FakeTimeProvider) fails with `QuestionClosed` and writes nothing; one received 1 ms before is accepted.
-- [ ] AC17: Two different answers from one player for the same question, sent concurrently into the actor, result in exactly one `Answers` row; the other gets `AlreadyAnswered`; a retry with the same `submissionId` returns `AnswerAccepted` again and does not change the score.
-- [ ] AC18: Answers before start (`NotStarted`), for a question that is not current (`NotCurrentQuestion`), with an unknown option (`Invalid`), or from a user who has not joined (`NotJoined`) are rejected and write nothing.
-- [ ] AC19: With 20 players answering one question concurrently, every stored total and every rank after close equals the expected values computed from the same inputs.
+- [x] AC14: A correct answer received with `remaining` ms left earns `500 + round(500 * remaining / limit)` (away from zero); wrong or no answer earns 0; tested at full time, mid-time with a .5 case, and 1 ms left.
+- [x] AC15: `SubmitAnswer` returns only `AnswerAccepted` (no correctness or points), the `Answers` row and the new `Players.TotalPoints` are committed before the reply, and `AnswersCount` is pushed at most once per 200 ms.
+- [x] AC16: An answer received at or after the deadline (FakeTimeProvider) fails with `QuestionClosed` and writes nothing; one received 1 ms before is accepted.
+- [x] AC17: Two different answers from one player for the same question, sent concurrently into the actor, result in exactly one `Answers` row; the other gets `AlreadyAnswered`; a retry with the same `submissionId` returns `AnswerAccepted` again and does not change the score.
+- [x] AC18: Answers before start (`NotStarted`), for a question that is not current (`NotCurrentQuestion`), with an unknown option (`Invalid`), or from a user who has not joined (`NotJoined`) are rejected and write nothing.
+- [x] AC19: With 20 players answering one question concurrently, every stored total and every rank after close equals the expected values computed from the same inputs.
 
 Closing, reveal, finish
-- [ ] AC20: The question closes when the deadline passes, or as soon as every eligible online player has answered; each player then receives their own `QuestionClosed` with the correct option, their answer, correct?, points, total, rank and top 10; the organizer receives the full board.
-- [ ] AC21: After the reveal time the next `QuestionStarted` is pushed; after the last question the session is stored as Finished and `QuizFinished` is pushed with own rank and top 10 for each player (also one ranked below 10) and the full board for the organizer.
-- [ ] AC22: Ranking uses competition ranks on total points (equal points share a rank, the next rank skips), ordered inside a tie by earliest `reachedAt`, then username.
-- [ ] AC23: A player who disconnects mid-question is stored offline (`PlayerOnlineChanged`), stays on the board, and the question still closes early when all remaining eligible online players have answered.
-- [ ] AC24: When the last online player disconnects while Running, the quiz finishes at once and the final board is kept.
-- [ ] AC25: A finished session rejects joins (`QuizFinished`) and answers, and its leaderboard stays readable from SQLite, also after a restart.
+- [x] AC20: The question closes when the deadline passes, or as soon as every eligible online player has answered; each player then receives their own `QuestionClosed` with the correct option, their answer, correct?, points, total, rank and top 10; the organizer receives the full board.
+- [x] AC21: After the reveal time the next `QuestionStarted` is pushed; after the last question the session is stored as Finished and `QuizFinished` is pushed with own rank and top 10 for each player (also one ranked below 10) and the full board for the organizer.
+- [x] AC22: Ranking uses competition ranks on total points (equal points share a rank, the next rank skips), ordered inside a tie by earliest `reachedAt`, then username.
+- [x] AC23: A player who disconnects mid-question is stored offline (`PlayerOnlineChanged`), stays on the board, and the question still closes early when all remaining eligible online players have answered.
+- [x] AC24: When the last online player disconnects while Running, the quiz finishes at once and the final board is kept.
+- [x] AC25: A finished session rejects joins (`QuizFinished`) and answers, and its leaderboard stays readable from SQLite, also after a restart.
 
 Organizer view
-- [ ] AC26: `WatchQuiz` by the organizer returns a snapshot (players, state, current question, answers count, full board) in any state, including after a reconnect and after finish; by another user it fails with `NotOrganizer`; an unknown ID with `QuizNotFound`.
-- [ ] AC27: The session keeps running (questions advance) while no organizer connection is open.
+- [x] AC26: `WatchQuiz` by the organizer returns a snapshot (players, state, current question, answers count, full board) in any state, including after a reconnect and after finish; by another user it fails with `NotOrganizer`; an unknown ID with `QuizNotFound`.
+- [x] AC27: The session keeps running (questions advance) while no organizer connection is open.
 
 Reliability and observability
-- [ ] AC28: An exception while handling one actor message (including a failed save) rolls back its transaction, fails only that call with a code (no exception text reaches the client), is logged with quizId, and later messages for the session still work.
-- [ ] AC29: After a restart on the same SQLite file, a Running session resumes: an overdue question is closed and the next one starts; players are offline until they rejoin with their points kept.
-- [ ] AC30: Metrics for live sessions, connections, answers accepted/rejected by code, message processing latency and close-to-push latency are published under one `Meter`.
+- [x] AC28: An exception while handling one actor message (including a failed save) rolls back its transaction, fails only that call with a code (no exception text reaches the client), is logged with quizId, and later messages for the session still work.
+- [x] AC29: After a restart on the same SQLite file, a Running session resumes: an overdue question is closed and the next one starts; players are offline until they rejoin with their points kept.
+- [x] AC30: Metrics for live sessions, connections, answers accepted/rejected by code, message processing latency and close-to-push latency are published under one `Meter`.
 
 Client (Vitest + RTL, hub faked)
-- [ ] AC31: Login form: success navigates to home, a 401 shows "Wrong username or password".
-- [ ] AC32: Player view renders lobby -> question (4 options, countdown from `endsAt - serverNow`) -> locked in (options disabled) -> reveal (correct option, points, total, rank, top 10) -> final; a join error shows its reason; a dropped connection shows "Connection lost" with Rejoin.
-- [ ] AC33: Organizer view shows players joining live, Start enabled only with >= 2 online players (also in the organizer's play lobby), answers in / eligible during a question, and the full board and podium at finish.
+- [x] AC31: Login form: success navigates to home, a 401 shows "Wrong username or password".
+- [x] AC32: Player view renders lobby -> question (4 options, countdown from `endsAt - serverNow`) -> locked in (options disabled) -> reveal (correct option, points, total, rank, top 10) -> final; a join error shows its reason; a dropped connection shows "Connection lost" with Rejoin.
+- [x] AC33: Organizer view shows players joining live, Start enabled only with >= 2 online players (also in the organizer's play lobby), answers in / eligible during a question, and the full board and podium at finish.
 
 Seed and end-to-end (built last)
-- [ ] AC34: In Development, an empty DB is seeded with 3 users and 2 quiz sets that pass the seed validator; a non-empty DB is not touched; outside Development nothing is seeded.
-- [ ] AC35: Server E2E: an organizer and 20 players log in, join, play a full quiz over SignalR (random answers, some late, one disconnect and rejoin); every player's final total and rank in `QuizFinished` equals the values recomputed from the `Answers` rows in SQLite.
-- [ ] AC36: Server E2E: 3 sessions of 20 players run at the same time to the end with no cross-session events and no unexpected errors; the run time is recorded in docs/AI-COLLABORATION.md.
+- [x] AC34: In Development, an empty DB is seeded with 3 users and 2 quiz sets that pass the seed validator; a non-empty DB is not touched; outside Development nothing is seeded.
+- [x] AC35: Server E2E: an organizer and 20 players log in, join, play a full quiz over SignalR (random answers, some late, one disconnect and rejoin); every player's final total and rank in `QuizFinished` equals the values recomputed from the `Answers` rows in SQLite.
+- [x] AC36: Server E2E: 3 sessions of 20 players run at the same time to the end with no cross-session events and no unexpected errors; the run time is recorded in docs/AI-COLLABORATION.md.
 
 ## Not building
 
@@ -504,10 +504,58 @@ Seed and end-to-end (built last)
 
 ## Status
 
+Final evidence 2026-10-22 on `main` after S0-S9 (PRs #1-#11): `dotnet test Quiz.slnx && npm --prefix web test -- --run` -> server 216 passed, 0 failed, 0 skipped; web 37 passed (5 files). "Run" = the real HTTP and SignalR calls listed in README (Final evidence run).
+
 | Acceptance criterion | Evidence (test or request) | Result |
 |----------------------|----------------------------|--------|
-|                      |                            |        |
+| AC1 | S2 `SchemaTests.Startup_MigratesEveryTable`, `Startup_SetsWalJournalMode`; `DatabaseHealthTests.Health_WhenTheDatabaseIsReachable_Returns200`; Run 2026-10-22: `GET /health` 200 | pass |
+| AC2 | S2 `AuthTests.Login_ValidCredentials_Returns200WithTheUserAndSetsTheAuthCookie`, `Me_AfterLogin_ReturnsThatUser`; Run 2026-10-22: alice, bob login 200 | pass |
+| AC3 | S2 `AuthTests.Login_WrongPasswordOrUnknownUser_Returns401Problem`, `Login_EmptyField_Returns400ValidationForThatField`; Run 2026-10-22: wrong password 401 | pass |
+| AC4 | S3 `SessionsApiTests.SessionEndpoints_Anonymous_Return401`; S6 `QuizSetsApiTests.List_Anonymous_Returns401`; S4 `QuizHubTests.Connect_Anonymous_IsRefused`; Run 2026-10-22: anonymous quiz sets 401 | pass |
+| AC5 | S6 `QuizSetsApiTests.List_LoggedIn_ReturnsEveryStoredSetWithoutAnyAnswer`; Run 2026-10-22: `GET /api/quiz-sets` 200 | pass |
+| AC6 | S6 `SeedValidatorTests` (three options, duplicate option texts, unknown correct id, and 9 more) | pass |
+| AC7 | S3 `SessionsApiTests.Create_KnownQuizSet_Returns201WithLocationAndStoresALobbySessionOwnedByTheCaller`, `Create_UnknownQuizSet_Returns404`, `Create_MissingQuizSetId_Returns400Validation`; S1 `QuizIdGeneratorTests`; Run 2026-10-22: 201 `KASPGY` | pass |
+| AC8 | S3/S9 `SessionsApiTests.Start_*` (organizer 200, other user 403, `Start_WithTheDefaultRules_NeedsTwoOnlinePlayers`, twice 409, unknown 404); S9 `SessionLifecycleTests.Start_*`; Run 2026-10-22: one player 409 `NoPlayers`, two players 200, `QuestionStarted` without the correct option | pass |
+| AC9 | S3 `SessionsApiTests.Leaderboard_ReturnsTheFullOrderedListFromTheDatabase`, `Leaderboard_UnknownQuiz_Returns404`; Run 2026-10-22: 200, unknown 404 | pass |
+| AC10 | S4 `QuizHubTests.JoinQuiz_InLobby_ReturnsTheJoinResultAndPushesPlayerJoined`; Run 2026-10-22: bob joins with the lowercase ID | pass |
+| AC11 | S4 `QuizHubTests.JoinQuiz_UnknownQuiz_FailsWithQuizNotFound`, `FinishedQuiz_RejectsJoinsAndAnswers`, `JoinQuiz_The21stUser_FailsWithSessionFull`; S9 `JoinQuiz_ByTheOrganizer_IsAPlayerAndOnlyTheOrganizerIsToldSo`; Run 2026-10-22: alice `isOrganizer: true`, bob false | pass |
+| AC12 | S4 `QuizHubTests.LateJoin_GetsTheCurrentQuestionButCannotAnswerItThenAnswersTheNext`; S1 `SessionJoinTests.Join_LateWhileRunning_StartsAtZeroAndCannotAnswerTheCurrentQuestion` | pass |
+| AC13 | S4 `QuizHubTests.Rejoin_FromASecondConnection_IsTheSamePlayerAndTheOldConnectionStopsReceiving`, `Rejoin_AfterADisconnect_KeepsThePointsAndComesBackOnline` | pass |
+| AC14 | S1 `ScoringTests` (full time, .5 rounding, wrong, clamped) | pass |
+| AC15 | S4 `QuizHubTests.SubmitAnswer_ReturnsOnlyAcceptedCommitsTheRowAndMergesAnswersCount`; Run 2026-10-22: `AnswerAccepted` only | pass |
+| AC16 | S4 `QuizHubTests.SubmitAnswer_OneMillisecondBeforeTheDeadlineIsAcceptedAndAtTheDeadlineIsClosed`; S1 `SessionAnswerTests` | pass |
+| AC17 | S4 `QuizHubTests.SubmitAnswer_TwoAnswersFromOneUserOnTwoConnectionsAtOnce_StoreOneAndARetryKeepsTheScore`; S3 `SessionActorTests.Ask_TwoAnswersFromOnePlayerAtOnce_StoresExactlyOne` | pass |
+| AC18 | S4 `QuizHubTests.SubmitAnswer_RejectionCodes`; S1 `SessionAnswerTests` (not started, not current, unknown option, not joined) | pass |
+| AC19 | S4 `QuizHubTests.TwentyPlayers_AnswerAtOnce_EachGetsTheirExactResultAndFinalRank`; S1 `SessionAnswerTests.SubmitAnswer_TwentyPlayers_TotalsAndRanksMatchTheExpectedValues` | pass |
+| AC20 | S1 `SessionLifecycleTests.Tick_AtTheDeadline_ClosesTheQuestionAndStartsTheReveal`, `SubmitAnswer_LastEligibleOnlinePlayer_ClosesTheQuestionEarly`; S4 `QuizHubTests.TwentyPlayers_*`; Run 2026-10-22: closed early once both answered, each player got their own `QuestionClosed` | pass |
+| AC21 | S1 `SessionLifecycleTests.Tick_AfterTheReveal_StartsTheNextQuestion`, `Tick_AfterTheLastReveal_FinishesTheQuiz`; S6 `EndToEndTests.FullQuiz_*` | pass |
+| AC22 | S1 `RankingTests` (shared rank and skip, tie by `reachedAt` then name) | pass |
+| AC23 | S4 `QuizHubTests.Disconnect_MidQuestion_PushesOfflineKeepsThePlayerAndClosesWhenTheRestAnswered` | pass |
+| AC24 | S4 `QuizHubTests.Disconnect_TheLastOnlinePlayer_FinishesTheQuiz`; S7 `JoinQuiz_ASecondQuizOnTheSameConnection_FailsWithInvalidAndTheFirstQuizStillSeesTheDisconnect` | pass |
+| AC25 | S4 `QuizHubTests.FinishedQuiz_RejectsJoinsAndAnswers`, `FinishedQuiz_LeaderboardStaysReadableAfterARestart`; Run 2026-10-22: after a restart the board of `KASPGY` kept alice's 995 points | pass |
+| AC26 | S4 `QuizHubTests.WatchQuiz_ByTheOrganizer_ReturnsASnapshotInEveryState`, `WatchQuiz_ByAnotherUserOrForAnUnknownQuiz_Fails`; Run 2026-10-22: bob `WatchQuiz` -> `NotOrganizer` | pass |
+| AC27 | S4 `QuizHubTests.Close_AfterTheRevealTheNextQuestionStartsWithoutAnOrganizerConnected` | pass |
+| AC28 | S3 `SessionActorTests.Ask_FailingSave_RollsBackFailsOnlyThatCallLogsTheQuizAndTheNextCallWorks`; S4 `QuizHubTests.UnexpectedFailure_ReturnsOnlyServerErrorAndTheNextCallWorks` | pass |
+| AC29 | S3 `SessionActorTests.Restart_ResumesARunningSession_ClosesTheOverdueQuestionAndStartsTheNextWhenAPlayerRejoins`, `Restart_DuringAnOverdueReveal_LeavesARevealToRejoinThenContinues` | pass |
+| AC30 | S4 `QuizHubTests.Metrics_EveryInstrumentIsRecorded` | pass |
+| AC31 | S5 `Login.test.tsx` "Login (AC31)" | pass |
+| AC32 | S5 `Play.test.tsx` "Player view (AC32)"; S8 Top 10 row text; manual runs (S5, S9) and the demo recording | pass |
+| AC33 | S5/S9 `Host.test.tsx` "Organizer live view (AC33)"; S9 `Play.test.tsx` "Lobby with the organizer playing too" | pass |
+| AC34 | S6 `DevSeederTests` (empty DB seeded, dev passwords work, non-empty untouched, Production nothing) | pass |
+| AC35 | S6 `EndToEndTests.FullQuiz_TwentyPlayersWithLateAnswersAndARejoin_FinalTotalsAndRanksMatchTheAnswerRows` | pass |
+| AC36 | S6 `EndToEndTests.ThreeSessionsAtOnce_TwentyPlayersEach_RunToTheEndWithNoCrossSessionEvents`; run time in docs/AI-COLLABORATION.md | pass |
+| AC37 | S0 `SkeletonTests.OpenApiDocument_InDevelopment_Returns200WithDocument`, `SwaggerUi_InDevelopment_Returns200WithUi`, `ApiDocs_InProduction_Return404`; Run 2026-10-22: `/swagger` 200, `/openapi/v1.json` lists every Contract REST endpoint with its codes | pass |
+| AC38 | S0 `SkeletonTests.ClientRoute_ReturnsSpaIndex`, `UnknownServerPath_Returns404ProblemDetails`; Run 2026-10-22: `/` 200 | pass |
 
 - Not verified:
+  - No automated test in real browsers (the web is tested with Vitest + RTL and a faked hub); the UI was checked by hand (S5, S9) and in the demo recording.
+  - Load beyond 3 sessions x 20 players at once (AC36) was not measured; `dotnet-counters` output was not captured in the final run.
+  - `/health` is a health check endpoint and is not in the OpenAPI document.
+  - Seen in the demo: after a quiz finishes, the organizer board's Status column keeps the status from the finish (a player who leaves afterwards still shows "online"; the player chips are right).
 - Next, with more time:
+  - List open lobbies on Home, updated live over the hub (S10, designed and dropped for time); today players type the quiz ID.
+  - Post-review Should not picked: add `userId` to the log scope next to `quizId`.
+  - S9 review Should: send `minPlayersToStart` from the server instead of the copy in the web client; share the Start button and lobby styles between the play lobby and the organizer board.
+  - Contract wording: the hub is untyped (`SendAsync` by event name), and `ServerError` / `QuizNotFound` can also come back from `SubmitAnswer`.
+  - Browser tests (Playwright) with three logged-in users.
 - At scale, first change: move from SQLite to PostgreSQL and broadcast top 10 once per group plus a small per-player result (trigger: > 1 node, or > ~200 players per session).
