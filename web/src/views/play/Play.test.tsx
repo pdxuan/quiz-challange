@@ -109,8 +109,8 @@ describe('Player view (AC32)', () => {
     expect(screen.getByText('Rank: 2')).toBeTruthy()
     const top10 = within(screen.getByRole('list', { name: 'Top 10' })).getAllByRole('listitem')
     expect(top10).toHaveLength(10)
-    expect(top10[0]?.textContent).toContain('p1')
-    expect(top10[9]?.textContent).toContain('p10')
+    expect(top10[0]?.textContent).toBe('1 p1 1000') // rank, name and points read as separate words
+    expect(top10[9]?.textContent).toBe('10 p10 910')
 
     act(() => hub.emit('QuizFinished', { totalPoints: 1600, rank: 3, top10: board(10) }))
     expect(screen.getByRole('heading', { level: 3, name: 'Quiz finished' })).toBeTruthy()
