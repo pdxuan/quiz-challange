@@ -35,7 +35,7 @@ export function HostSetup() {
   }
 
   return (
-    <section className={styles.panel}>
+    <section className={`card ${styles.panel} ${styles.setup}`}>
       <h2>Host a quiz</h2>
       {error && (
         <p role="alert" className={styles.error}>

@@ -152,8 +152,8 @@ export function HostLive() {
   const count = s.players.length
   const anyOnline = s.players.some((p) => p.online) // the server starts only with an online player
   return (
-    <section className={styles.panel}>
-      <h2>Hosting {quizId}</h2>
+    <section className={`card ${styles.panel}`}>
+      <h2 className={styles.title}>Hosting {quizId}</h2>
       {s.lost && (
         <div className={styles.lost}>
           <p>Connection lost</p>
@@ -162,7 +162,7 @@ export function HostLive() {
           </button>
         </div>
       )}
-      {s.status === 'connecting' && <p>Connecting...</p>}
+      {s.status === 'connecting' && <p className="muted">Connecting...</p>}
       {s.status === 'rejected' && (
         <p role="alert" className={styles.error}>
           {s.error}
@@ -171,34 +171,43 @@ export function HostLive() {
       {s.status === 'watching' && (
         <>
           {s.state === 'Lobby' && (
-            <>
-              <p>Players join with this quiz ID:</p>
+            <div className={styles.lobby}>
+              <p className="muted">Players join with this quiz ID:</p>
               <p aria-label="Quiz ID" className={styles.quizId}>
                 {quizId}
               </p>
-              <button type="button" onClick={start} disabled={!anyOnline || starting}>
-                Start
-              </button>
+              <div className={styles.startRow}>
+                <button type="button" className={styles.start} onClick={start} disabled={!anyOnline || starting}>
+                  Start
+                </button>
+                {!anyOnline && <p className="muted">Start opens once a player is online.</p>}
+              </div>
               {startError && (
                 <p role="alert" className={styles.error}>
                   {startError}
                 </p>
               )}
-            </>
+            </div>
           )}
-          {s.state === 'Running' && s.question && <Question host={s} question={s.question} />}
-          {s.state === 'Finished' && <Podium leaderboard={s.leaderboard} />}
-          <p>
-            {count} {count === 1 ? 'player' : 'players'}
-          </p>
-          <ul aria-label="Players" className={styles.players}>
-            {s.players.map((p) => (
-              <li key={p.username} className={p.online ? undefined : styles.offline}>
-                {p.online ? p.username : `${p.username} (offline)`}
-              </li>
-            ))}
-          </ul>
-          {s.state !== 'Lobby' && s.leaderboard.length > 0 && <Board entries={s.leaderboard} />}
+          <div className={s.state === 'Lobby' ? undefined : styles.live}>
+            <div className={styles.stage}>
+              {s.state === 'Running' && s.question && <Question host={s} question={s.question} />}
+              {s.state === 'Finished' && <Podium leaderboard={s.leaderboard} />}
+              <div className={styles.roster}>
+                <p className={styles.count}>
+                  {count} {count === 1 ? 'player' : 'players'}
+                </p>
+                <ul aria-label="Players" className={styles.players}>
+                  {s.players.map((p) => (
+                    <li key={p.username} className={p.online ? undefined : styles.offline}>
+                      {p.online ? p.username : `${p.username} (offline)`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            {s.state !== 'Lobby' && s.leaderboard.length > 0 && <Board entries={s.leaderboard} />}
+          </div>
         </>
       )}
     </section>
@@ -208,25 +217,31 @@ export function HostLive() {
 function Question({ host, question }: { host: HostState; question: TimedQuestion }) {
   const correct = question.options.find((o) => o.optionId === host.correctOptionId)
   return (
-    <>
-      <p>
-        Question {question.index + 1} of {question.total}
-      </p>
-      <h3 className={styles.prompt}>{question.prompt}</h3>
-      {correct ? <p className={styles.correct}>Correct answer: {correct.text}</p> : <Countdown deadline={question.deadline} />}
+    <div className={styles.question}>
+      <div className={styles.meta}>
+        <p>
+          Question {question.index + 1} of {question.total}
+        </p>
+        {correct ? <p className={styles.reveal}>Correct answer: {correct.text}</p> : <Countdown deadline={question.deadline} />}
+      </div>
+      <h3 className={styles.headword}>{question.prompt}</h3>
       <ul className={styles.options}>
-        {question.options.map((o) => (
-          <li key={o.optionId} className={o.optionId === host.correctOptionId ? styles.correct : undefined}>
+        {question.options.map((o, i) => (
+          <li
+            key={o.optionId}
+            data-letter={'ABCD'[i]}
+            className={`${styles.option} ${o.optionId === host.correctOptionId ? styles.correct : ''}`}
+          >
             {o.text}
           </li>
         ))}
       </ul>
       {host.answers && (
-        <p className={styles.big}>
+        <p className={styles.answers}>
           Answers in: {host.answers.answered} / {host.answers.eligible}
         </p>
       )}
-    </>
+    </div>
   )
 }
 
@@ -238,10 +253,14 @@ function ordinal(rank: number) {
 function Podium({ leaderboard }: { leaderboard: BoardEntry[] }) {
   return (
     <>
-      <h3>Quiz finished</h3>
+      <h3 className={styles.finished}>Quiz finished</h3>
       <ol aria-label="Podium" className={styles.podium}>
-        {leaderboard.slice(0, 3).map((e) => (
-          <li key={e.username}>{`${ordinal(e.rank)} ${e.username} ${e.totalPoints}`}</li>
+        {leaderboard.slice(0, 3).map((e, i) => (
+          <li key={e.username} data-step={i + 1}>
+            <span className={styles.place}>{ordinal(e.rank)}</span>{' '}
+            <span className={styles.winner}>{e.username}</span>{' '}
+            <span className={styles.total}>{e.totalPoints}</span>
+          </li>
         ))}
       </ol>
     </>

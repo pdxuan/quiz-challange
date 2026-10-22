@@ -1,0 +1,177 @@
+/* Design tokens: a vocabulary index card on a cool desk. One bold thing (the card and its
+   headword); everything around it stays quiet. */
+:root {
+  --desk: #e6ecf5;
+  --paper: #fbfcfe;
+  --ink: #1b2a4a;
+  --ink-soft: #52627f;
+  --rule: #c9d6ea;
+  --margin: #d7263d;
+  --marker: #ffe066;
+  --opt-a: #2f6fde;
+  --opt-b: #8a4fd8;
+  --opt-c: #1f9e89;
+  --opt-d: #e3a008;
+  --ok: #1d7a46;
+
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+
+  --radius-card: 6px;
+  --radius-control: 10px;
+  --line: 1.75rem; /* the card's ruled line spacing */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.1;
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--opt-a);
+  text-underline-offset: 0.2em;
+}
+
+/* Controls */
+button {
+  font: inherit;
+  font-weight: 700;
+  color: var(--paper);
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-control);
+  padding: 0.65rem 1.25rem;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: #2a3d66;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+button.secondary {
+  color: var(--ink);
+  background: transparent;
+}
+
+button.secondary:hover:not(:disabled) {
+  background: var(--desk);
+}
+
+input {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-control);
+  padding: 0.6rem 0.8rem;
+  width: 100%;
+}
+
+input:focus {
+  border-color: var(--opt-a);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+:focus-visible {
+  outline: 3px solid var(--opt-a);
+  outline-offset: 2px;
+}
+
+/* The index card: ruled lines and a red margin, the one recurring visual device. */
+.card {
+  position: relative;
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--line) - 1px),
+    var(--rule) calc(var(--line) - 1px),
+    var(--rule) var(--line)
+  );
+  background-position: 0 3.5rem;
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 0 #b9c6da, 0 12px 28px -18px rgba(27, 42, 74, 0.45);
+  padding: 1.5rem 1.5rem 2rem 3.25rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2.25rem;
+  width: 2px;
+  background: var(--margin);
+  opacity: 0.55;
+}
+
+.alert {
+  color: var(--margin);
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+@media (max-width: 560px) {
+  .card {
+    padding: 1.25rem 1rem 1.5rem 2rem;
+  }
+
+  .card::before {
+    left: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

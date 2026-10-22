@@ -27,10 +27,10 @@ export function Home() {
   }
 
   return (
-    <section className={styles.panel}>
+    <section className={`card ${styles.panel}`}>
       <p className={styles.user}>
         Logged in as {user.username}{' '}
-        <button type="button" onClick={logout}>
+        <button type="button" className="secondary" onClick={logout}>
           Log out
         </button>
       </p>
@@ -44,7 +44,7 @@ export function Home() {
           Join
         </button>
       </form>
-      <p>
+      <p className={styles.host}>
         Or <Link to="/host">host a quiz</Link>.
       </p>
     </section>

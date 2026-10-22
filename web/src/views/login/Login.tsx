@@ -31,7 +31,7 @@ export function Login() {
   }
 
   return (
-    <section className={styles.panel}>
+    <section className={`card ${styles.panel}`}>
       <h2>Log in</h2>
       <form className={styles.form} onSubmit={submit}>
         <label>

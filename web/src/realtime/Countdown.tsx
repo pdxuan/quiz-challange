@@ -30,7 +30,7 @@ export function Countdown({ deadline }: { deadline: number }) {
   }, [deadline])
 
   return (
-    <p role="timer" aria-live="off" className={styles.timer}>
+    <p role="timer" aria-live="off" className={styles.timer} data-low={seconds <= 5 ? '' : undefined}>
       {seconds} s
     </p>
   )

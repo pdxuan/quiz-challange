@@ -1,53 +1,195 @@
+/* The organizer screens are read on a projector: larger type, more room. */
 .panel {
-  max-width: 48rem;
+  max-width: 72rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+/* Setup */
+.setup {
+  max-width: 44rem;
 }
 
 .sets {
   list-style: none;
+  margin: 0;
   padding: 0;
+  display: grid;
+  gap: 0.75rem;
 }
 
 .sets li {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #ddd;
+  gap: 0.25rem 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--paper);
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-control);
+}
+
+.sets strong {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+
+.sets span {
+  grid-column: 1;
+  color: var(--ink-soft);
+}
+
+.sets button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+/* Lobby: the quiz ID is the hero, big enough for the back row. */
+.lobby {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  padding: 1rem 0 0.5rem;
 }
 
 .quizId {
-  font-size: 4rem;
-  font-weight: bold;
-  letter-spacing: 0.15em;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 16vw, 9rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
   margin: 0.25rem 0 1rem;
 }
 
-.prompt {
-  font-size: 2rem;
-  margin: 0.5rem 0;
+.startRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.start {
+  font-size: 1.25rem;
+  padding: 0.85rem 2.5rem;
+}
+
+/* Running and finished: question on the left, the full board on the right. */
+.live {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.stage {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.question {
+  display: grid;
+  gap: 1rem;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.headword {
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  overflow-wrap: anywhere;
 }
 
 .options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  list-style: none;
-  padding: 0;
+  gap: 0.75rem;
 }
 
-.options li {
-  border: 1px solid #ccc;
-  padding: 0.75rem;
+.option {
+  --opt: var(--opt-a);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 4.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 1.35rem;
+  background: var(--paper);
+  border: 2px solid var(--rule);
+  border-left: 6px solid var(--opt);
+  border-radius: var(--radius-control);
+}
+
+.option[data-letter='B'] {
+  --opt: var(--opt-b);
+}
+
+.option[data-letter='C'] {
+  --opt: var(--opt-c);
+}
+
+.option[data-letter='D'] {
+  --opt: var(--opt-d);
+}
+
+.option::before {
+  content: attr(data-letter);
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--opt);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 800;
 }
 
 .correct {
-  background: #c8e6c9;
-  font-weight: bold;
+  font-weight: 700;
+  background: var(--marker);
+  border-color: var(--ink);
 }
 
-.big {
-  font-size: 1.25rem;
-  font-weight: bold;
+.reveal {
+  color: var(--ink);
+  padding: 0.1rem 0.5rem;
+  background: var(--marker);
+}
+
+.answers {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.roster {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.count {
+  font-weight: 700;
+  color: var(--ink-soft);
 }
 
 .players {
@@ -55,46 +197,136 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   list-style: none;
+  margin: 0;
   padding: 0;
 }
 
 .players li {
-  background: #eef;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
+  padding: 0.3rem 0.85rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  font-weight: 700;
 }
 
-.offline {
-  opacity: 0.5;
+.players li.offline {
+  border-style: dashed;
+  border-color: var(--ink-soft);
+  color: var(--ink-soft);
+  font-weight: 400;
 }
 
+.finished {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+/* Podium: three steps, first in the middle and tallest. */
 .podium {
   list-style: none;
+  margin: 0;
   padding: 0;
-  font-size: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: end;
+  gap: 0.75rem;
 }
 
+.podium li {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  padding: 1rem 0.5rem;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-bottom-width: 6px;
+}
+
+.podium li[data-step='1'] {
+  order: 2;
+  min-height: 12rem;
+  background: var(--marker);
+}
+
+.podium li[data-step='2'] {
+  order: 1;
+  min-height: 9rem;
+}
+
+.podium li[data-step='3'] {
+  order: 3;
+  min-height: 7rem;
+}
+
+.place {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.winner {
+  font-size: 1.25rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.total {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+/* Full board */
 .board {
+  width: 100%;
   border-collapse: collapse;
-  min-width: 24rem;
+  font-size: 1.05rem;
 }
 
-.board th,
-.board td {
-  border-bottom: 1px solid #ddd;
-  padding: 0.25rem 0.75rem;
+.board th {
   text-align: left;
+  font-weight: 700;
+  color: var(--ink-soft);
+  border-bottom: 2px solid var(--ink);
+  padding: 0.35rem 0.5rem;
+}
+
+.board td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+
+.board td:nth-child(2) {
+  font-weight: 700;
 }
 
 .error {
-  color: #b00020;
+  color: var(--margin);
+  font-weight: 700;
 }
 
 .lost {
-  background: #fff3cd;
-  border: 1px solid #e0c060;
-  padding: 0.5rem 1rem;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--margin);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--margin) 8%, var(--paper));
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .live {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .options {
+    grid-template-columns: 1fr;
+  }
 }

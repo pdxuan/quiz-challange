@@ -165,8 +165,8 @@ export function Play() {
   }
 
   return (
-    <section className={styles.panel}>
-      <h2>Playing {quizId}</h2>
+    <section className={`card ${styles.panel}`}>
+      <h2 className={styles.title}>Playing {quizId}</h2>
       {state.lost && (
         <div className={styles.lost}>
           <p>Connection lost</p>
@@ -183,7 +183,7 @@ export function Play() {
 function PhaseView({ state, onAnswer }: { state: PlayState; onAnswer: (optionId: string) => void }) {
   switch (state.phase) {
     case 'connecting':
-      return <p>Joining...</p>
+      return <p className="muted">Joining...</p>
     case 'rejected':
       return (
         <>
@@ -195,19 +195,18 @@ function PhaseView({ state, onAnswer }: { state: PlayState; onAnswer: (optionId:
       )
     case 'lobby':
       return (
-        <>
-          <p>Waiting for the host to start...</p>
-          <p>
+        <div className={styles.waiting}>
+          <p className={styles.waitingTitle}>Waiting for the host to start...</p>
+          <p className="muted">
             {state.playerCount} {state.playerCount === 1 ? 'player' : 'players'} in the lobby
           </p>
-        </>
+        </div>
       )
     case 'waiting':
       return (
         <>
-          <p>Waiting for the next question...</p>
-          <p>Total: {state.you.totalPoints}</p>
-          <p>Rank: {state.you.rank}</p>
+          <p className={styles.waitingTitle}>Waiting for the next question...</p>
+          <Standing total={state.you.totalPoints} rank={state.you.rank} />
           <Top10 entries={state.top10} />
         </>
       )
@@ -219,9 +218,8 @@ function PhaseView({ state, onAnswer }: { state: PlayState; onAnswer: (optionId:
       return (
         state.final && (
           <>
-            <h3>Quiz finished</h3>
-            <p className={styles.big}>Total: {state.final.totalPoints}</p>
-            <p className={styles.big}>Rank: {state.final.rank}</p>
+            <h3 className={styles.finished}>Quiz finished</h3>
+            <Standing total={state.final.totalPoints} rank={state.final.rank} big />
             <Top10 entries={state.final.top10} />
             <Link to="/">Back to home</Link>
           </>
@@ -230,21 +228,26 @@ function PhaseView({ state, onAnswer }: { state: PlayState; onAnswer: (optionId:
   }
 }
 
+const LETTERS = ['A', 'B', 'C', 'D']
+
 function QuestionPanel({ state, question, onAnswer }: { state: PlayState; question: TimedQuestion; onAnswer: (optionId: string) => void }) {
   const disabled = !state.canAnswer || state.chosen !== null
   return (
     <>
-      <p>
-        Question {question.index + 1} of {question.total}
-      </p>
-      <h3 className={styles.prompt}>{question.prompt}</h3>
-      <Countdown deadline={question.deadline} />
+      <div className={styles.meta}>
+        <p>
+          Question {question.index + 1} of {question.total}
+        </p>
+        <Countdown deadline={question.deadline} />
+      </div>
+      <h3 className={styles.headword}>{question.prompt}</h3>
       <div role="group" aria-label="Options" className={styles.options}>
-        {question.options.map((o) => (
+        {question.options.map((o, i) => (
           <button
             key={o.optionId}
             type="button"
-            className={o.optionId === state.chosen ? styles.chosen : undefined}
+            className={`${styles.option} ${o.optionId === state.chosen ? styles.chosen : ''}`}
+            data-letter={LETTERS[i]}
             disabled={disabled}
             onClick={() => onAnswer(o.optionId)}
           >
@@ -252,7 +255,7 @@ function QuestionPanel({ state, question, onAnswer }: { state: PlayState; questi
           </button>
         ))}
       </div>
-      {!state.canAnswer && <p>You joined during this question. You can answer from the next one.</p>}
+      {!state.canAnswer && <p className="muted">You joined during this question. You can answer from the next one.</p>}
       {state.locked && <p className={styles.locked}>Answer locked in</p>}
       {state.notice && (
         <p role="alert" className={styles.error}>
@@ -268,14 +271,24 @@ function Reveal({ reveal, question }: { reveal: PlayerQuestionClosed; question: 
   const verdict = reveal.yourOptionId === null ? 'No answer' : reveal.correct ? 'Correct!' : 'Wrong'
   return (
     <>
-      {question && <h3 className={styles.prompt}>{question.prompt}</h3>}
-      <p className={reveal.correct ? styles.right : styles.wrong}>{verdict}</p>
-      <p>Correct answer: {text(reveal.correctOptionId)}</p>
-      <p className={styles.big}>+{reveal.points} points</p>
-      <p>Total: {reveal.totalPoints}</p>
-      <p>Rank: {reveal.rank}</p>
+      {question && <h3 className={styles.headword}>{question.prompt}</h3>}
+      <p className={styles.answer}>Correct answer: {text(reveal.correctOptionId)}</p>
+      <div className={styles.verdictRow}>
+        <p className={reveal.correct ? styles.right : styles.wrong}>{verdict}</p>
+        <p className={styles.points}>+{reveal.points} points</p>
+      </div>
+      <Standing total={reveal.totalPoints} rank={reveal.rank} />
       <Top10 entries={reveal.top10} />
     </>
+  )
+}
+
+function Standing({ total, rank, big = false }: { total: number; rank: number; big?: boolean }) {
+  return (
+    <div className={`${styles.standing} ${big ? styles.standingBig : ''}`}>
+      <p>Total: {total}</p>
+      <p>Rank: {rank}</p>
+    </div>
   )
 }
 
@@ -284,7 +297,9 @@ function Top10({ entries }: { entries: BoardEntry[] }) {
     <ol aria-label="Top 10" className={styles.board}>
       {entries.map((e) => (
         <li key={e.username}>
-          {e.rank}. {e.username} - {e.totalPoints}
+          <span className={styles.rank}>{e.rank}</span>
+          <span className={styles.name}>{e.username}</span>
+          <span className={styles.score}>{e.totalPoints}</span>
         </li>
       ))}
     </ol>
