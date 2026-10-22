@@ -297,8 +297,8 @@ function Top10({ entries }: { entries: BoardEntry[] }) {
     <ol aria-label="Top 10" className={styles.board}>
       {entries.map((e) => (
         <li key={e.username}>
-          <span className={styles.rank}>{e.rank}</span>
-          <span className={styles.name}>{e.username}</span>
+          <span className={styles.rank}>{e.rank}</span>{' '}
+          <span className={styles.name}>{e.username}</span>{' '}
           <span className={styles.score}>{e.totalPoints}</span>
         </li>
       ))}

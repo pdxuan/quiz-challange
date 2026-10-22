@@ -125,6 +125,16 @@ merged. S0-S4 run one at a time in the main session (about 25 + 25 + 25 + 30 + 4
   - Done when: the test command is green.
   - Decision: interviewer, 2026-10-22: one connection plays at most one quiz; a join for another quiz fails with `Invalid` (already a `JoinQuiz` code, so the web needs no change). Rejected: a set of quiz ids per connection (a state the SPA never creates).
 
+- [x] **S8 Top 10 reads as separate words** - LEAF
+  - Branch: bugfix/s8-top10-spacing
+  - Covers: AC32 (player view reveal and final board), S5 review Should
+  - Files: `web/src/views/play/Play.tsx`; `web/src/views/play/Play.test.tsx`
+  - Read first: `Play.tsx` `Top10`
+  - Depends on: S5
+  - Tests: a Top 10 row reads `1 p1 1000` (rank, name, points), not `1p11000`.
+  - Done when: the test command is green.
+  - Decision: a space text node between the spans, as in the organizer `Podium`; the grid layout ignores it, so nothing moves on screen.
+
 ## Decisions
 
 Written by `/plan` only. A decision made while building goes into that slice's block.
