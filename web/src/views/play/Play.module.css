@@ -1,0 +1,68 @@
+.panel {
+  max-width: 36rem;
+}
+
+.prompt {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+}
+
+.timer {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: bold;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.options button {
+  font-size: 1.25rem;
+  padding: 1rem;
+}
+
+.chosen {
+  outline: 3px solid #1a73e8;
+}
+
+.locked {
+  font-weight: bold;
+}
+
+.right {
+  color: #1b5e20;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.wrong {
+  color: #b00020;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.big {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.error {
+  color: #b00020;
+}
+
+.lost {
+  background: #fff3cd;
+  border: 1px solid #e0c060;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.board {
+  padding-left: 0;
+  list-style: none;
+}
