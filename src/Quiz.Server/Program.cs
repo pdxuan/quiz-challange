@@ -4,6 +4,7 @@ using Quiz.Server.Features.Play;
 using Quiz.Server.Features.QuizSets;
 using Quiz.Server.Features.Sessions;
 using Quiz.Server.Observability;
+using Quiz.Server.Runtime;
 using Quiz.Server.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.AddQuizObservability();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 builder.Services.AddQuizData();
+builder.Services.AddQuizRuntime(builder.Configuration);
 
 // One registration per feature; LEAF slices fill their own Feature file, never this one.
 builder.Services

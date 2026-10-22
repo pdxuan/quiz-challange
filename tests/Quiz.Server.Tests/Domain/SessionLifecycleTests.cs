@@ -297,6 +297,30 @@ public class SessionLifecycleTests
     }
 
     [Fact]
+    public void Resume_DuringAnOverdueReveal_GivesPlayersAFullRevealToRejoin()
+    {
+        var session = Running(1);
+        session.Answer(1, "a", TimeSpan.FromSeconds(1)); // closed; the reveal ended at T0+6 while the server was down
+        var restartedAt = T0 + TimeSpan.FromMinutes(2);
+
+        session.Resume(restartedAt, Rules);
+
+        Assert.Equal((SessionPhase.Reveal, restartedAt + Rules.RevealDuration), (session.Phase, session.PhaseEndsAt));
+        Assert.False(Assert.Single(session.Players).Online);
+    }
+
+    [Fact]
+    public void Resume_DuringAQuestion_KeepsItsDeadline()
+    {
+        var session = Running(2);
+
+        session.Resume(T0.AddSeconds(3), Rules);
+
+        Assert.Equal((SessionPhase.Question, T0 + Limit), (session.Phase, session.PhaseEndsAt));
+        Assert.All(session.Players, p => Assert.False(p.Online));
+    }
+
+    [Fact]
     public void FullQuiz_EndsFinishedWithEveryQuestionPlayed()
     {
         var session = Running(1, questions: 2);

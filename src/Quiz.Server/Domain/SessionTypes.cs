@@ -18,6 +18,7 @@ public enum SessionPhase
 public enum SessionError
 {
     Invalid,
+    QuizNotFound,
     QuizFinished,
     SessionFull,
     IsOrganizer,

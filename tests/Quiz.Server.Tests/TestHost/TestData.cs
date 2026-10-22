@@ -47,6 +47,19 @@ public static class TestData
         return set;
     }
 
+    /// <summary>Creates a Lobby session of a fresh quiz set organized by a fresh user, straight through the registry.</summary>
+    public static async Task<(string QuizId, Guid Organizer)> AddLobbyAsync(this QuizApiFactory factory, int questions = 3, string organizer = "org")
+    {
+        var set = await factory.AddQuizSetAsync($"set-{Guid.NewGuid():N}", questions);
+        var organizerId = await factory.AddUserAsync(organizer);
+        var quizId = await factory.Registry.CreateAsync(set.Id, organizerId);
+        return (quizId!, organizerId);
+    }
+
+    /// <summary>Joins a user to a session through the actor, as the hub (S4) will.</summary>
+    public static Task<JoinOutcome> JoinAsync(this QuizApiFactory factory, string quizId, Guid userId, string name) =>
+        factory.Registry.AskAsync(quizId, (session, call) => session.Join(userId, name, $"conn-{name}", call.Now, call.Rules));
+
     /// <summary>A client that carries the auth cookie of <paramref name="username"/>.</summary>
     public static async Task<HttpClient> LoginAsync(this QuizApiFactory factory, string username, string password = Password)
     {
