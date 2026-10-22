@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S1; reviewed by a reviewer agent and a human; verified by RankingTests (docs/ai-collab/s1.md).
 namespace Quiz.Server.Domain;
 
 /// <param name="TotalPoints">The points shown on the board (may be lower than <see cref="Player.TotalPoints"/> while a question is open).</param>

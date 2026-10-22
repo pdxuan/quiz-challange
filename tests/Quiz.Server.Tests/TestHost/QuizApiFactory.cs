@@ -55,6 +55,7 @@ public class QuizApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment(Environment);
         builder.UseWebRoot(webRoot);
         builder.UseSetting("ConnectionStrings:Quiz", $"Data Source={DatabasePath}");
+        builder.UseSetting("Seed:Enabled", "false"); // tests create their own data (TASK.md Assumptions, Seed data)
         builder.ConfigureLogging(logging => logging.AddProvider(Logs));
         builder.ConfigureTestServices(services =>
         {

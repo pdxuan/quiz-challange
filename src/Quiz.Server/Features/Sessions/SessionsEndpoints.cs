@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S3; reviewed by a reviewer agent and a human; verified by Features/Sessions/SessionsApiTests (docs/ai-collab/s3.md).
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Quiz.Server.Data;

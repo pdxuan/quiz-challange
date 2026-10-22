@@ -98,7 +98,7 @@ non-overlapping files and may run in parallel worktrees.
   - Done when: the test command is green; `npm --prefix web run build` writes to `wwwroot`; one manual run (organizer + 2 players in separate browser profiles) is recorded in `docs/ai-collab/s5.md`.
   - Decision: every logged-in route (`/`, `/host`, `/host/:quizId`, `/play/:quizId`) goes through `RequireUser` (`GET /api/auth/me`, 401 -> `/login`); the organizer view also shows "Connection lost" with Rejoin (calls `WatchQuiz` again); hub error codes map to readable text in `web/src/realtime/hub.ts`; test fakes (`fakeFetch`, `fakeHub`) live next to the code they replace and are not bundled. Review fixes (interviewer): Start needs an online player; only `Invalid`/`ServerError` let a player pick again; `Countdown` moved to `web/src/realtime/`; R14 markers on the web files. Visual redesign (interviewer chose the "index card" direction): tokens and base styles in `web/src/styles/global.css`, Google Fonts (Bricolage Grotesque, Atkinson Hyperlegible) linked in `web/index.html`; no new package.
 
-- [ ] **S6 Quiz sets, seed, end-to-end and docs** - LEAF
+- [x] **S6 Quiz sets, seed, end-to-end and docs** - TRUNK (was LEAF)
   - Branch: feature/s6-seed-e2e-docs
   - Covers: R6, R13, R14, AC5, AC6, AC34, AC35, AC36
   - Files: `src/Quiz.Server/Features/QuizSets/**` (fills the S0 stub); `src/Quiz.Server/Seed/**` (`DevSeeder`, `SeedValidator`, `seed/users.json`, `seed/quiz-sets.json`, fills `SeedFeature.cs`); `tests/Quiz.Server.Tests/Features/QuizSets/**`, `tests/Quiz.Server.Tests/Seed/**`, `tests/Quiz.Server.Tests/EndToEnd/**`; `docs/DESIGN.md`, `docs/AI-COLLABORATION.md` (tools, prompt style and a per-slice table linking `docs/ai-collab/s0..s6.md`; it links S5's file rather than copying it, since S5 runs in parallel), `docs/ai-collab/s6.md`, `README.md` (How to run: server, web, tests, `dotnet-counters`; video outline)
@@ -107,7 +107,7 @@ non-overlapping files and may run in parallel worktrees.
   - Wave: 1, in parallel with S5
   - Tests: quiz sets listed without correct options, 401 anonymous (AC5); validator rejects 3 options, duplicate option texts, an unknown correct id (AC6); Development + empty DB seeds 3 users and 2 valid sets, non-empty DB untouched, Production seeds nothing (AC34); E2E: organizer + 20 players, full quiz, random answers, some late, one disconnect and rejoin, final totals and ranks equal those recomputed from `Answers` rows (AC35); 3 sessions x 20 players at once, no cross-session events, run time printed (AC36)
   - Done when: the test command is green; the E2E run time and every slice's verification notes are in `docs/AI-COLLABORATION.md`.
-  - Decision: (written while building, if any)
+  - Decision: interviewer, 2026-10-22: lane LEAF -> TRUNK. Dev seeding (Development + empty DB) also ran in the test host and broke 56 tests on the unique username, so seeding has a `Seed:Enabled` flag (default on) and `TestHost/QuizApiFactory.cs` (TRUNK) sets it off; seed tests turn it on in their own factory. Seed JSON is read from the content root (`Seed/seed/*.json`); the validator also rejects an empty quiz set, `timeLimitSec <= 0` and duplicate question ids/positions/words. R14 markers: a first-line `// AI-assisted:` comment on the 17 significant server/test files (tool, slice, evidence); the web files get theirs in the S5 fix.
 
 Parallel math (minutes, estimates): S5 = 40, S6 = 30. Sequential = 70; parallel =
 max(40, 30) + 2 setup + 2 x 3 apply = 48, saving about 22. Run `/build S5 S6` after S4 is

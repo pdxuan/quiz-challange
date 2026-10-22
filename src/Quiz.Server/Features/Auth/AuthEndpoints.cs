@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S2; reviewed by a reviewer agent and a human; verified by Features/Auth/AuthTests (docs/ai-collab/s2.md).
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;

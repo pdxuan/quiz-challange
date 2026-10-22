@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S4; reviewed by a reviewer agent and a human; verified by Features/Play/QuizHubTests, mutations (docs/ai-collab/s4.md).
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
