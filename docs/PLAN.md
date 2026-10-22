@@ -45,7 +45,7 @@ non-overlapping files and may run in parallel worktrees.
   - Done when: `dotnet test Quiz.slnx && npm --prefix web test -- --run` is green, written to `.claude/test-cmd`; `dotnet run` starts and `/swagger` opens.
   - Decision: `/api`, `/hubs`, `/openapi`, `/swagger` get a 404 ProblemDetails fallback before the SPA fallback, so server paths never return the SPA page. The ONE-WAY package list in docs/TASK.md Assumptions was approved by the interviewer with the plan on 2026-10-22. Also approved in chat: `@types/react`, `@types/react-dom`, `@testing-library/dom` added as devDependencies; test packages `SignalR.Client` and `TimeProvider.Testing` are added by S3/S4 when first used; `coverlet.collector` from the template removed. The server listens on 5080 (Vite proxy target).
 
-- [ ] **S1 Domain rules** - TRUNK
+- [x] **S1 Domain rules** - TRUNK
   - Branch: feature/s1-domain-rules
   - Covers: R4; rule level of AC11-AC14, AC16-AC24 and the quiz ID format in AC7
   - Files: `src/Quiz.Server/Domain/**` (`Session`, `Player`, `Answer`, `QuizSet`, `Question`, `Option`, enums, `Scoring`, `Ranking`, `QuizIdGenerator`, `SessionError` codes, result/event records); `tests/Quiz.Server.Tests/Domain/**`; `docs/ai-collab/s1.md`
@@ -53,7 +53,7 @@ non-overlapping files and may run in parallel worktrees.
   - Depends on: S0
   - Tests: unit tests with explicit `now`: scoring at full time / a .5 case / 1 ms left / wrong (AC14); deadline 1 ms before vs at `PhaseEndsAt` (AC16); second answer `AlreadyAnswered`, same `submissionId` idempotent (AC17); `NotStarted` / `NotCurrentQuestion` / `Invalid` / `NotJoined` (AC18); late joiner `NotEligible`, rejoin keeps points and may answer the open question (AC12, AC13); cap 20 `SessionFull`, `IsOrganizer`, `QuizFinished` (AC11); early close when all eligible online answered, also after a disconnect (AC20, AC23); last online player leaves -> Finished (AC24); reveal -> next question -> Finished (AC21); competition ranking with ties (AC22); 20 answers in sequence give the expected totals and ranks (AC19); quiz ID alphabet and length. Mutation check on `Scoring` recorded in `docs/ai-collab/s1.md`.
   - Done when: the test command is green; `Domain/` has no ASP.NET or EF reference.
-  - Decision: (written while building, if any)
+  - Decision: rule failures throw `SessionException(SessionError)` (names = Contract codes) and changes collect in `Session.Events`; capacity and reveal time are passed in as `SessionRules` (config, no schema change); `Start` needs at least one online player (otherwise the all-offline rule would finish it at once); `Tick` makes one transition per call so a reveal is never skipped; a finished session answers `QuestionClosed`.
 
 - [ ] **S2 Data and auth** - TRUNK +ONE-WAY (needs OK: schema)
   - Branch: feature/s2-data-and-auth
