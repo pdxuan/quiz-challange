@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
+using Quiz.Server.Features.Play;
 using Quiz.Server.Runtime;
 
 namespace Quiz.Server.Tests.TestHost;
@@ -60,7 +61,11 @@ public class QuizApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Time);
             services.RemoveAll<ISessionEvents>();
-            services.AddSingleton<ISessionEvents>(Events);
+            services.AddSingleton<ISessionEvents>(sp =>
+            {
+                Events.Inner = sp.GetRequiredService<SignalRSessionEvents>(); // record, then push for real
+                return Events;
+            });
         });
     }
 
