@@ -55,7 +55,7 @@ non-overlapping files and may run in parallel worktrees.
   - Done when: the test command is green; `Domain/` has no ASP.NET or EF reference.
   - Decision: rule failures throw `SessionException(SessionError)` (names = Contract codes) and changes collect in `Session.Events`; capacity and reveal time are passed in as `SessionRules` (config, no schema change); `Start` needs at least one online player (otherwise the all-offline rule would finish it at once); `Tick` makes one transition per call so a reveal is never skipped; a finished session answers `QuestionClosed`.
 
-- [ ] **S2 Data and auth** - TRUNK +ONE-WAY (needs OK: schema)
+- [x] **S2 Data and auth** - TRUNK +ONE-WAY (needs OK: schema)
   - Branch: feature/s2-data-and-auth
   - Covers: R2, R3, AC1, AC2, AC3, AC4 (REST part)
   - Files: `src/Quiz.Server/Data/**` (`QuizDbContext`, Fluent configurations of the domain classes, `Migrations/` initial migration, SQLite setup: WAL, busy timeout, `DateTimeOffset` converter, migrate at startup); `src/Quiz.Server/Features/Auth/**`; `src/Quiz.Server/Program.cs` (cookie auth with 401/403 instead of redirects, `AddDbContextFactory`); `src/Quiz.Server/Quiz.Server.csproj` (EF Core packages); `src/Quiz.Server/Observability/**` (DB health check); `tests/Quiz.Server.Tests/TestHost/**` (temp SQLite file per test class, data builders for users and quiz sets, login helper); `tests/Quiz.Server.Tests/Data/**`, `tests/Quiz.Server.Tests/Features/Auth/**`; `docs/ai-collab/s2.md`
@@ -63,7 +63,7 @@ non-overlapping files and may run in parallel worktrees.
   - Depends on: S1
   - Tests: migrations create every table and key, `PRAGMA journal_mode` = wal, a round trip of a `Session` with players and answers keeps every field (AC1); the duplicate `Answers` primary key is rejected; login 200 + cookie, case-insensitive username, then `/me` (AC2); wrong password / unknown user 401 ProblemDetails, empty fields 400 (AC3); anonymous `/api/auth/me` and the session stubs 401 (AC4); `/health` 503 when the DB file cannot be opened
   - Done when: the test command is green; the migration SQL is read line by line in the PR.
-  - Decision: (written while building, if any)
+  - Decision: interviewer, 2026-10-22: `Options` key is `(QuestionId, OptionId)` with a composite FK from `Answers`; `Questions.CorrectOptionId` has no FK (checked by the S6 seed validator). Deny by default: an authorization fallback policy requires a logged-in user; login, logout, health, OpenAPI and the SPA/404 fallbacks are `AllowAnonymous`. `User` lives in `Data/`. Review fixes (picked by the interviewer): every `DateTimeOffset` is stored as UTC (converter); busy timeout is explicit (5 s); `Answers` has no FK to `Questions` (the composite FK to `Options` implies it); `Sessions -> QuizSets/Users`, `Players -> Users` and `Answers -> Options` are `RESTRICT` so history cannot be deleted by accident. AC4 here is proven for `/api/auth/me`; S3 (sessions), S4 (hub) and S6 (quiz sets) each add an anonymous -> 401 test for their own endpoints.
 
 - [ ] **S3 Session actor and sessions API** - TRUNK
   - Branch: feature/s3-session-actor-api

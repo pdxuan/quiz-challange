@@ -10,13 +10,13 @@ public static class ObservabilityExtensions
 
         builder.Services.AddMetrics();
         builder.Services.AddSingleton<QuizMetrics>();
-        builder.Services.AddHealthChecks();
+        builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database");
         return builder;
     }
 
     public static IEndpointRouteBuilder MapQuizHealth(this IEndpointRouteBuilder app)
     {
-        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health").AllowAnonymous();
         return app;
     }
 }
