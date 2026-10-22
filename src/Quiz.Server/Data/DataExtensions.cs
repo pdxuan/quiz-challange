@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S2; reviewed by a reviewer agent and a human; verified by Data/SchemaTests, DatabaseHealthTests (docs/ai-collab/s2.md).
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

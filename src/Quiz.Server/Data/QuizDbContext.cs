@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S2; reviewed by a reviewer agent and a human; verified by Data/SchemaTests, migration SQL read by a human (docs/ai-collab/s2.md).
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Quiz.Server.Domain;

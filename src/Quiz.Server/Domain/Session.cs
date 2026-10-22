@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S1; reviewed by a reviewer agent and a human; verified by Domain/Session*Tests, mutations (docs/ai-collab/s1.md).
 namespace Quiz.Server.Domain;
 
 /// <summary>

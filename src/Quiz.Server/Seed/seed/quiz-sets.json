@@ -1,0 +1,196 @@
+[
+  {
+    "id": "everyday-words",
+    "title": "Everyday words",
+    "timeLimitSec": 20,
+    "questions": [
+      {
+        "id": "everyday-01", "prompt": "reluctant", "direction": "WordToMeaning", "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "very happy to do something" },
+          { "id": "b", "text": "unwilling and hesitant" },
+          { "id": "c", "text": "extremely tired" },
+          { "id": "d", "text": "quick to understand" }
+        ]
+      },
+      {
+        "id": "everyday-02", "prompt": "a feeling of great happiness", "direction": "MeaningToWord", "correctOptionId": "c",
+        "options": [
+          { "id": "a", "text": "sorrow" },
+          { "id": "b", "text": "anger" },
+          { "id": "c", "text": "delight" },
+          { "id": "d", "text": "boredom" }
+        ]
+      },
+      {
+        "id": "everyday-03", "prompt": "borrow", "direction": "WordToMeaning", "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "to give something as a present" },
+          { "id": "b", "text": "to take something and promise to return it" },
+          { "id": "c", "text": "to sell something cheaply" },
+          { "id": "d", "text": "to throw something away" }
+        ]
+      },
+      {
+        "id": "everyday-04", "prompt": "a place where books are kept for people to read or borrow", "direction": "MeaningToWord", "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "bakery" },
+          { "id": "b", "text": "library" },
+          { "id": "c", "text": "pharmacy" },
+          { "id": "d", "text": "garage" }
+        ]
+      },
+      {
+        "id": "everyday-05", "prompt": "cautious", "direction": "WordToMeaning", "correctOptionId": "a",
+        "options": [
+          { "id": "a", "text": "careful to avoid danger" },
+          { "id": "b", "text": "loud and noisy" },
+          { "id": "c", "text": "full of energy" },
+          { "id": "d", "text": "easily broken" }
+        ]
+      },
+      {
+        "id": "everyday-06", "prompt": "to make something clean by washing it quickly with water", "direction": "MeaningToWord", "correctOptionId": "c",
+        "options": [
+          { "id": "a", "text": "fold" },
+          { "id": "b", "text": "stir" },
+          { "id": "c", "text": "rinse" },
+          { "id": "d", "text": "sweep" }
+        ]
+      },
+      {
+        "id": "everyday-07", "prompt": "neighbour", "direction": "WordToMeaning", "correctOptionId": "a",
+        "options": [
+          { "id": "a", "text": "a person who lives next to you" },
+          { "id": "b", "text": "a person who teaches you" },
+          { "id": "c", "text": "a person who sells food" },
+          { "id": "d", "text": "a person who repairs cars" }
+        ]
+      },
+      {
+        "id": "everyday-08", "prompt": "no longer used because something newer exists", "direction": "MeaningToWord", "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "modern" },
+          { "id": "b", "text": "obsolete" },
+          { "id": "c", "text": "fragile" },
+          { "id": "d", "text": "generous" }
+        ]
+      },
+      {
+        "id": "everyday-09", "prompt": "humble", "direction": "WordToMeaning", "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "proud of yourself" },
+          { "id": "b", "text": "not thinking you are better than others" },
+          { "id": "c", "text": "very rich" },
+          { "id": "d", "text": "always late" }
+        ]
+      },
+      {
+        "id": "everyday-10", "prompt": "the meal eaten in the morning", "direction": "MeaningToWord", "correctOptionId": "d",
+        "options": [
+          { "id": "a", "text": "dinner" },
+          { "id": "b", "text": "supper" },
+          { "id": "c", "text": "lunch" },
+          { "id": "d", "text": "breakfast" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "travel-words",
+    "title": "Travel words",
+    "timeLimitSec": 15,
+    "questions": [
+      {
+        "id": "travel-01", "prompt": "itinerary", "direction": "WordToMeaning", "correctOptionId": "a",
+        "options": [
+          { "id": "a", "text": "a planned route or journey" },
+          { "id": "b", "text": "a travel insurance form" },
+          { "id": "c", "text": "a type of suitcase" },
+          { "id": "d", "text": "a hotel receipt" }
+        ]
+      },
+      {
+        "id": "travel-02", "prompt": "a document that lets you travel to another country", "direction": "MeaningToWord", "correctOptionId": "a",
+        "options": [
+          { "id": "a", "text": "passport" },
+          { "id": "b", "text": "ticket" },
+          { "id": "c", "text": "receipt" },
+          { "id": "d", "text": "brochure" }
+        ]
+      },
+      {
+        "id": "travel-03", "prompt": "departure", "direction": "WordToMeaning", "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "the act of arriving" },
+          { "id": "b", "text": "the act of leaving" },
+          { "id": "c", "text": "a delay" },
+          { "id": "d", "text": "a stopover" }
+        ]
+      },
+      {
+        "id": "travel-04", "prompt": "the bags and cases you take on a trip", "direction": "MeaningToWord", "correctOptionId": "c",
+        "options": [
+          { "id": "a", "text": "cargo" },
+          { "id": "b", "text": "souvenir" },
+          { "id": "c", "text": "luggage" },
+          { "id": "d", "text": "customs" }
+        ]
+      },
+      {
+        "id": "travel-05", "prompt": "souvenir", "direction": "WordToMeaning", "correctOptionId": "a",
+        "options": [
+          { "id": "a", "text": "a thing kept as a reminder of a place" },
+          { "id": "b", "text": "a local guide" },
+          { "id": "c", "text": "a cheap hotel" },
+          { "id": "d", "text": "a border check" }
+        ]
+      },
+      {
+        "id": "travel-06", "prompt": "a person who is visiting a place for pleasure", "direction": "MeaningToWord", "correctOptionId": "d",
+        "options": [
+          { "id": "a", "text": "resident" },
+          { "id": "b", "text": "pilot" },
+          { "id": "c", "text": "landlord" },
+          { "id": "d", "text": "tourist" }
+        ]
+      },
+      {
+        "id": "travel-07", "prompt": "layover", "direction": "WordToMeaning", "correctOptionId": "c",
+        "options": [
+          { "id": "a", "text": "an extra fee for bags" },
+          { "id": "b", "text": "a seat by the window" },
+          { "id": "c", "text": "a short stop between two parts of a journey" },
+          { "id": "d", "text": "a cancelled flight" }
+        ]
+      },
+      {
+        "id": "travel-08", "prompt": "an arrangement to keep a room or seat for you", "direction": "MeaningToWord", "correctOptionId": "b",
+        "options": [
+          { "id": "a", "text": "refund" },
+          { "id": "b", "text": "reservation" },
+          { "id": "c", "text": "receptionist" },
+          { "id": "d", "text": "lobby" }
+        ]
+      },
+      {
+        "id": "travel-09", "prompt": "landmark", "direction": "WordToMeaning", "correctOptionId": "a",
+        "options": [
+          { "id": "a", "text": "an easily recognised building or place" },
+          { "id": "b", "text": "a map symbol for water" },
+          { "id": "c", "text": "a country's border" },
+          { "id": "d", "text": "the price of a tour" }
+        ]
+      },
+      {
+        "id": "travel-10", "prompt": "the official check of bags and goods at a border", "direction": "MeaningToWord", "correctOptionId": "d",
+        "options": [
+          { "id": "a", "text": "boarding" },
+          { "id": "b", "text": "check-in" },
+          { "id": "c", "text": "security gate" },
+          { "id": "d", "text": "customs" }
+        ]
+      }
+    ]
+  }
+]

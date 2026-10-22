@@ -1,3 +1,4 @@
+// AI-assisted: Claude Code (Claude Opus 5.5), slice S0; reviewed by a reviewer agent and a human; verified by SkeletonTests (docs/ai-collab/s0.md).
 using Quiz.Server.Data;
 using Quiz.Server.Features.Auth;
 using Quiz.Server.Features.Play;
