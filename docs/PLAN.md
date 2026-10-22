@@ -35,7 +35,7 @@ non-overlapping files and may run in parallel worktrees.
 
 ### Wave 0 (TRUNK)
 
-- [ ] **S0 Walking skeleton** - TRUNK +ONE-WAY (needs OK: packages)
+- [x] **S0 Walking skeleton** - TRUNK +ONE-WAY (needs OK: packages)
   - Branch: chore/s0-walking-skeleton
   - Covers: R1, part of R9 (logging, `QuizMetrics` instruments, `/health`), AC37, AC38
   - Files: `Quiz.slnx`; `.config/dotnet-tools.json` (dotnet-ef); `.gitignore` (App_Data, wwwroot, node_modules, dist); `src/Quiz.Server/` (`Quiz.Server.csproj`, `Program.cs`, `appsettings*.json`, one `<Feature>Feature.cs` with empty `Add<Feature>()`/`Map<Feature>()` per folder in `Features/{Auth,QuizSets,Sessions,Play}/`, `Seed/SeedFeature.cs` stub, `Observability/` with `QuizMetrics` and logging/health extensions, SPA fallback to `wwwroot/index.html`); `tests/Quiz.Server.Tests/` (`.csproj`, `TestHost/QuizApiFactory.cs`, `Skeleton/SkeletonTests.cs`); `web/` (`package.json` + lock with every web package from TASK.md Assumptions, `vite.config.ts` with the `/api` + `/hubs` (ws) proxy and build output to `../src/Quiz.Server/wwwroot`, `tsconfig*.json`, Vitest + jsdom setup, `src/main.tsx`, `src/App.tsx` route placeholders, one smoke test); `.claude/test-cmd`; `docs/ai-collab/s0.md`
@@ -43,7 +43,7 @@ non-overlapping files and may run in parallel worktrees.
   - Depends on: -
   - Tests: `/openapi/v1.json` 200 and `/swagger` 200 in Development, 404 in Production (AC37); `/play/ABC234` returns `index.html`, `/api/nope` 404 (AC38); `/health` 200; web smoke test renders `App`
   - Done when: `dotnet test Quiz.slnx && npm --prefix web test -- --run` is green, written to `.claude/test-cmd`; `dotnet run` starts and `/swagger` opens.
-  - Decision: (written while building, if any)
+  - Decision: `/api`, `/hubs`, `/openapi`, `/swagger` get a 404 ProblemDetails fallback before the SPA fallback, so server paths never return the SPA page. The ONE-WAY package list in docs/TASK.md Assumptions was approved by the interviewer with the plan on 2026-10-22. Also approved in chat: `@types/react`, `@types/react-dom`, `@testing-library/dom` added as devDependencies; test packages `SignalR.Client` and `TimeProvider.Testing` are added by S3/S4 when first used; `coverlet.collector` from the template removed. The server listens on 5080 (Vite proxy target).
 
 - [ ] **S1 Domain rules** - TRUNK
   - Branch: feature/s1-domain-rules

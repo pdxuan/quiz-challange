@@ -1,1 +1,1 @@
-TBD
+dotnet test Quiz.slnx && npm --prefix web test -- --run

@@ -13,3 +13,7 @@ node_modules/
 *.db-wal
 .claude/base-ref
 docs/prototype/
+# Build output and local data
+src/Quiz.Server/wwwroot/
+src/Quiz.Server/App_Data/
+web/dist/
