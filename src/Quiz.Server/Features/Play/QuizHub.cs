@@ -61,8 +61,8 @@ public sealed class QuizHub(SessionRegistry registry, TimeProvider time, QuizMet
             {
                 var outcome = session.Join(userId, username, connectionId, call.Now, call.Rules);
                 var ranked = session.Leaderboard();
-                return (new JoinResult(outcome.Player.DisplayName, session.State.ToString(), session.Players.Count,
-                    Views.OpenQuestion(session, call.Now), outcome.CanAnswerCurrent, Views.You(ranked, userId), Views.Board(ranked, 10)),
+                return (new JoinResult(outcome.Player.DisplayName, userId == session.OrganizerUserId, session.State.ToString(), session.Players.Count,
+                    Views.Players(session), Views.OpenQuestion(session, call.Now), outcome.CanAnswerCurrent, Views.You(ranked, userId), Views.Board(ranked, 10)),
                     outcome.ReplacedConnectionId);
             }));
             if (replaced is not null)
@@ -93,7 +93,7 @@ public sealed class QuizHub(SessionRegistry registry, TimeProvider time, QuizMet
                 session.EnsureOrganizer(userId);
                 var counts = session.Phase == SessionPhase.Question ? session.CurrentAnswerCounts() : default((int, int)?);
                 return new WatchSnapshot(session.State.ToString(),
-                    session.Players.Select(p => new PlayerView(p.DisplayName, p.Online)).ToList(),
+                    Views.Players(session),
                     Views.OpenQuestion(session, call.Now),
                     counts is { } c ? new AnswersCountView(c.Item1, c.Item2) : null,
                     Views.Board(session.Leaderboard()));

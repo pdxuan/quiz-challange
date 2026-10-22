@@ -135,6 +135,18 @@ merged. S0-S4 run one at a time in the main session (about 25 + 25 + 25 + 30 + 4
   - Done when: the test command is green.
   - Decision: a space text node between the spans, as in the organizer `Podium`; the grid layout ignores it, so nothing moves on screen.
 
+### Interviewer requests
+
+- [x] **S9 Organizer plays their own quiz; Start needs two players** - TRUNK +ONE-WAY (contract + product rule, approved 2026-10-22)
+  - Branch: feature/s9-organizer-plays
+  - Covers: AC11 (changed), AC8 (changed), AC32, AC33 (changed); D2 extended
+  - Files: `src/Quiz.Server/Domain/{Session,SessionTypes}.cs`; `src/Quiz.Server/Features/Play/{QuizHub,PlayContracts}.cs`; `src/Quiz.Server/Features/Sessions/SessionsEndpoints.cs`; `src/Quiz.Server/Runtime/SessionOptions.cs`; `web/src/realtime/{contracts,hub}.ts`; `web/src/views/play/{Play.tsx,Play.module.css,Play.test.tsx}`; `web/src/views/host/{HostSetup.tsx,HostLive.tsx,Host.test.tsx}`; tests `Domain/{SessionJoinTests,SessionLifecycleTests,DomainBuilders}.cs`, `Features/Play/QuizHubTests.cs`, `Features/Sessions/SessionsApiTests.cs`, `Runtime/SessionActorTests.cs`, `Data/SchemaTests.cs`, `TestHost/QuizApiFactory.cs`; `docs/TASK.md` (D2, organizer assumption, Contract `JoinQuiz` and start, AC8, AC11, AC33)
+  - Read first: `Session.Join`; `QuizHub.JoinQuiz`; `Play.tsx` lobby; `HostSetup.tsx` navigate
+  - Depends on: S7
+  - Tests: the organizer joins as a player (counted, ranked, `PlayerJoined`); `isOrganizer` true only for the creator; `players` in join order; the organizer plays with bob and scores 1000 on an instant correct answer; Start needs 2 online players (domain: 1 online, 2 joined with 1 offline -> `NoPlayers`, 2 online -> Running; API with the shipped config: organizer alone 409 `NoPlayers`, then 200 once alice joins); a failed join on the organizer's watching connection keeps it in the session group (now `SessionFull`: the organizer takes a seat). Web: creating a session opens `/play/:quizId`; the organizer's lobby shows the quiz ID, players by name (live), Start (disabled with a hint below 2 online players, kept live from `PlayerJoined` and `PlayerOnlineChanged`; POST, error shown) and an "Organizer board" link in a new tab; the organizer board also needs 2 online players; a player sees the names but no Start or link.
+  - Done when: the test command is green; one manual run: alice creates and plays with bob, Start from `/play`.
+  - Decision: interviewer, 2026-10-22: the creator is also an ordinary player (a seat of the 20). `IsOrganizer` is removed from `SessionError`, the Contract and the web messages; `JoinResult` gains `isOrganizer` and `players` (additive). Everyone in the lobby sees the names (the interviewer asked for names; a player list is harmless and matches Kahoot). Players are ordered by `JoinedAt`, then name, since the database returns them in key order. The "Organizer board" link opens a new tab, since leaving the play tab would take the organizer offline as a player (review Should). Interviewer, 2026-10-22: Start needs at least 2 online players (the organizer counts when playing), from `Sessions:MinPlayersToStart` (default 2) passed in `SessionRules`; `NoPlayers` keeps its code with a new message. Test hosts set it to 1 (`DomainBuilders.Rules`, `QuizApiFactory.MinPlayersToStart`), so the ~40 single-player scenarios need no idle second player that would keep questions open; the shipped value has its own domain, API and hub tests. Rollback: revert the PR; no schema or data change.
+
 ## Decisions
 
 Written by `/plan` only. A decision made while building goes into that slice's block.

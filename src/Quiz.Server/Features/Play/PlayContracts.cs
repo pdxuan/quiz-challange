@@ -13,7 +13,7 @@ public sealed record BoardEntry(int Rank, string Username, int TotalPoints, bool
 
 public sealed record YouView(int TotalPoints, int Rank);
 
-public sealed record JoinResult(string Username, string State, int PlayerCount, QuestionView? CurrentQuestion, bool CanAnswerCurrent, YouView You, IReadOnlyList<BoardEntry> Top10);
+public sealed record JoinResult(string Username, bool IsOrganizer, string State, int PlayerCount, IReadOnlyList<PlayerView> Players, QuestionView? CurrentQuestion, bool CanAnswerCurrent, YouView You, IReadOnlyList<BoardEntry> Top10);
 
 public sealed record PlayerView(string Username, bool Online);
 
@@ -74,6 +74,11 @@ internal static class Views
 
     public static IReadOnlyList<BoardEntry> Board(IReadOnlyList<RankedPlayer> ranked, int take = int.MaxValue) =>
         ranked.Take(take).Select(r => new BoardEntry(r.Rank, r.Player.DisplayName, r.TotalPoints, r.Player.Online)).ToList();
+
+    /// <summary>Everyone who joined, in join order (the database returns them in key order).</summary>
+    public static IReadOnlyList<PlayerView> Players(Session session) =>
+        session.Players.OrderBy(p => p.JoinedAt).ThenBy(p => p.DisplayName, StringComparer.Ordinal)
+            .Select(p => new PlayerView(p.DisplayName, p.Online)).ToList();
 
     public static YouView You(IReadOnlyList<RankedPlayer> ranked, Guid userId)
     {

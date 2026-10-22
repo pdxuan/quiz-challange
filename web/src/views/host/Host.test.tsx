@@ -55,7 +55,20 @@ function watching(snap: WatchSnapshot) {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('Organizer setup', () => {
-  it('lists quiz sets, opens a session and shows its quiz ID large', async () => {
+  it('lists quiz sets, opens a session and joins it as a player with its quiz ID large', async () => {
+    const playing = new FakeQuizHub()
+    playing.joinReply = () =>
+      Promise.resolve({
+        username: 'olivia',
+        isOrganizer: true,
+        state: 'Lobby',
+        playerCount: 1,
+        players: [{ username: 'olivia', online: true }],
+        currentQuestion: null,
+        canAnswerCurrent: false,
+        you: { totalPoints: 0, rank: 1 },
+        top10: [],
+      })
     const { calls, hub } = renderApp(
       '/host',
       {
@@ -68,7 +81,7 @@ describe('Organizer setup', () => {
         },
         'POST /api/sessions': { status: 201, body: { quizId: 'XYZ789' } },
       },
-      watching(snapshot()),
+      playing,
     )
     const user = userEvent.setup()
 
@@ -76,15 +89,15 @@ describe('Organizer setup', () => {
     expect(food.textContent).toContain('8 questions, 20 s each')
     await user.click(within(food).getByRole('button', { name: 'Open session' }))
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Hosting XYZ789' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { level: 2, name: 'Playing XYZ789' })).toBeTruthy()
     expect(calls.find((c) => c.method === 'POST' && c.path === '/api/sessions')?.body).toEqual({ quizSetId: 'food' })
-    expect(screen.getByLabelText('Quiz ID').textContent).toBe('XYZ789')
-    expect(hub.invoked('WatchQuiz')[0]?.args).toEqual(['XYZ789'])
+    expect((await screen.findByLabelText('Quiz ID')).textContent).toBe('XYZ789')
+    expect(hub.invoked('JoinQuiz')[0]?.args).toEqual(['XYZ789'])
   })
 })
 
 describe('Organizer live view (AC33)', () => {
-  it('shows players joining live and enables Start only with at least one player', async () => {
+  it('shows players joining live and enables Start only with two online players', async () => {
     let started = false
     const { calls, hub } = renderApp(
       '/host/ABC234',
@@ -107,22 +120,30 @@ describe('Organizer live view (AC33)', () => {
     const players = within(screen.getByRole('list', { name: 'Players' })).getAllByRole('listitem')
     expect(players.map((p) => p.textContent)).toEqual(['bob'])
     expect(screen.getByText('1 player')).toBeTruthy()
-    expect(start.disabled).toBe(false)
+    expect(start.disabled).toBe(true)
+    expect(screen.getByText('Start opens once two players are online.')).toBeTruthy()
 
     act(() => hub.emit('PlayerJoined', { username: 'carol', playerCount: 2 }))
+    expect(start.disabled).toBe(false)
     act(() => hub.emit('PlayerOnlineChanged', { username: 'bob', online: false }))
     expect(within(screen.getByRole('list', { name: 'Players' })).getAllByRole('listitem').map((p) => p.textContent)).toEqual([
       'bob (offline)',
       'carol',
     ])
+    expect(start.disabled).toBe(true)
+    act(() => hub.emit('PlayerOnlineChanged', { username: 'bob', online: true }))
 
     await user.click(start)
     expect(started).toBe(true)
     expect(calls.filter((c) => c.path === '/api/sessions/ABC234/start')).toHaveLength(1)
   })
 
-  it('keeps Start disabled while every player is offline (the server needs one online)', async () => {
-    const { hub } = renderApp('/host/ABC234', {}, watching(snapshot({ players: [{ username: 'bob', online: false }] })))
+  it('keeps Start disabled while fewer than two players are online (the server needs two)', async () => {
+    const { hub } = renderApp(
+      '/host/ABC234',
+      {},
+      watching(snapshot({ players: [{ username: 'bob', online: false }, { username: 'carol', online: true }] })),
+    )
 
     const start = (await screen.findByRole('button', { name: 'Start' })) as HTMLButtonElement
     expect(start.disabled).toBe(true)
@@ -135,13 +156,13 @@ describe('Organizer live view (AC33)', () => {
     renderApp(
       '/host/ABC234',
       { 'POST /api/sessions/ABC234/start': { status: 409, body: { title: 'NoPlayers', status: 409 } } },
-      watching(snapshot({ players: [{ username: 'bob', online: true }] })), // e.g. bob left just before the click
+      watching(snapshot({ players: [{ username: 'bob', online: true }, { username: 'carol', online: true }] })), // e.g. bob left just before the click
     )
     const user = userEvent.setup()
 
     await user.click(await screen.findByRole('button', { name: 'Start' }))
 
-    expect((await screen.findByRole('alert')).textContent).toBe('At least one player must join before you start.')
+    expect((await screen.findByRole('alert')).textContent).toBe('At least two players must be online before you start.')
   })
 
   it('shows the question, answers in / eligible and the full board after close', async () => {

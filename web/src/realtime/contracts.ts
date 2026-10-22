@@ -25,8 +25,10 @@ export interface BoardEntry {
 
 export interface JoinResult {
   username: string
+  isOrganizer: boolean
   state: 'Lobby' | 'Running' | 'Finished'
   playerCount: number
+  players: PlayerView[]
   currentQuestion: QuestionView | null
   canAnswerCurrent: boolean
   you: { totalPoints: number; rank: number }

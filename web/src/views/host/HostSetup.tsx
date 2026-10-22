@@ -27,7 +27,7 @@ export function HostSetup() {
     setError(null)
     try {
       const { quizId } = await api.createSession(quizSetId)
-      navigate(`/host/${encodeURIComponent(quizId)}`)
+      navigate(`/play/${encodeURIComponent(quizId)}`) // the organizer plays too; the board is linked from the lobby
     } catch (e) {
       setBusy(false)
       setError(e instanceof ApiError ? errorMessage(e.code) : 'Could not open a session.')

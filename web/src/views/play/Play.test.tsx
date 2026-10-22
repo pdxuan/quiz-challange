@@ -3,7 +3,7 @@ import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import App from '../../App'
-import { fakeFetch } from '../../api/fakeFetch'
+import { fakeFetch, type FakeRoutes } from '../../api/fakeFetch'
 import { FakeQuizHub, hubError } from '../../realtime/fakeHub'
 import { HubFactoryContext } from '../../realtime/hub'
 import type { BoardEntry, JoinResult, QuestionView } from '../../realtime/contracts'
@@ -32,8 +32,10 @@ function question(overrides: Partial<QuestionView> = {}): QuestionView {
 function lobby(overrides: Partial<JoinResult> = {}): JoinResult {
   return {
     username: 'alice',
+    isOrganizer: false,
     state: 'Lobby',
     playerCount: 1,
+    players: [{ username: 'alice', online: true }],
     currentQuestion: null,
     canAnswerCurrent: false,
     you: { totalPoints: 0, rank: 1 },
@@ -46,8 +48,9 @@ function board(count: number): BoardEntry[] {
   return Array.from({ length: count }, (_, i) => ({ rank: i + 1, username: `p${i + 1}`, totalPoints: 1000 - i * 10, online: true }))
 }
 
-function renderPlay(hub: FakeQuizHub) {
-  vi.stubGlobal('fetch', fakeFetch({ 'GET /api/auth/me': { status: 200, body: { userId: 'u1', username: 'alice' } } }).fetch)
+function renderPlay(hub: FakeQuizHub, routes: FakeRoutes = {}) {
+  const fake = fakeFetch({ 'GET /api/auth/me': { status: 200, body: { userId: 'u1', username: 'alice' } }, ...routes })
+  vi.stubGlobal('fetch', fake.fetch)
   render(
     <HubFactoryContext value={() => hub}>
       <MemoryRouter initialEntries={['/play/ABC234']}>
@@ -55,6 +58,7 @@ function renderPlay(hub: FakeQuizHub) {
       </MemoryRouter>
     </HubFactoryContext>,
   )
+  return fake.calls
 }
 
 function optionButtons() {
@@ -225,7 +229,6 @@ describe('Player view (AC32)', () => {
     ['QuizNotFound', 'Quiz not found. Check the quiz ID.'],
     ['QuizFinished', 'This quiz has already finished.'],
     ['SessionFull', 'This quiz is full.'],
-    ['IsOrganizer', 'You are the organizer of this quiz. Open it from Host a quiz.'],
   ])('shows the reason when the join fails with %s', async (code, message) => {
     const hub = new FakeQuizHub()
     hub.joinReply = () => Promise.reject(hubError(code))
@@ -251,5 +254,63 @@ describe('Player view (AC32)', () => {
     expect(screen.queryByText('Connection lost')).toBeNull()
     expect(hub.invoked('connect')).toHaveLength(2)
     expect(hub.invoked('JoinQuiz')).toHaveLength(2)
+  })
+})
+
+describe('Lobby with the organizer playing too', () => {
+  it('shows the organizer the quiz ID, every player by name, Start and the organizer board', async () => {
+    const hub = new FakeQuizHub()
+    hub.joinReply = () => Promise.resolve(lobby({ isOrganizer: true, players: [{ username: 'alice', online: true }] }))
+    const calls = renderPlay(hub, { 'POST /api/sessions/ABC234/start': { status: 200, body: { state: 'Running' } } })
+    const user = userEvent.setup()
+
+    expect((await screen.findByLabelText('Quiz ID')).textContent).toBe('ABC234')
+    expect((screen.getByRole('button', { name: 'Start' }) as HTMLButtonElement).disabled).toBe(true) // alone
+    expect(screen.getByText('Start opens once two players are online.')).toBeTruthy()
+    act(() => hub.emit('PlayerJoined', { username: 'bob', playerCount: 2 }))
+    const names = within(screen.getByRole('list', { name: 'Players' })).getAllByRole('listitem')
+    expect(names.map((n) => n.textContent)).toEqual(['alice', 'bob'])
+    const boardLink = screen.getByRole('link', { name: 'Organizer board' })
+    expect(boardLink.getAttribute('href')).toBe('/host/ABC234')
+    expect(boardLink.getAttribute('target')).toBe('_blank') // leaving this tab would take the organizer offline as a player
+
+    const start = screen.getByRole('button', { name: 'Start' }) as HTMLButtonElement
+    expect(start.disabled).toBe(false)
+    act(() => hub.emit('PlayerOnlineChanged', { username: 'bob', online: false }))
+    expect(start.disabled).toBe(true) // joined is not enough: the server counts online players
+    expect(within(screen.getByRole('list', { name: 'Players' })).getAllByRole('listitem').map((n) => n.textContent)).toEqual([
+      'alice',
+      'bob (offline)',
+    ])
+    act(() => hub.emit('PlayerOnlineChanged', { username: 'bob', online: true }))
+
+    await user.click(start)
+
+    expect(calls.filter((c) => c.method === 'POST' && c.path === '/api/sessions/ABC234/start')).toHaveLength(1)
+  })
+
+  it('shows why Start failed', async () => {
+    const hub = new FakeQuizHub()
+    hub.joinReply = () =>
+      Promise.resolve(lobby({ isOrganizer: true, playerCount: 2, players: [{ username: 'alice', online: true }, { username: 'bob', online: true }] }))
+    renderPlay(hub, { 'POST /api/sessions/ABC234/start': { status: 409, body: { title: 'NoPlayers' } } })
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: 'Start' }))
+
+    expect((await screen.findByRole('alert')).textContent).toBe('At least two players must be online before you start.') // e.g. bob just left
+  })
+
+  it('shows a player the names but no Start and no organizer board', async () => {
+    const hub = new FakeQuizHub()
+    hub.joinReply = () =>
+      Promise.resolve(lobby({ players: [{ username: 'olivia', online: true }, { username: 'alice', online: true }], playerCount: 2 }))
+    renderPlay(hub)
+
+    expect(await screen.findByText('Waiting for the host to start...')).toBeTruthy()
+    const names = within(screen.getByRole('list', { name: 'Players' })).getAllByRole('listitem')
+    expect(names.map((n) => n.textContent)).toEqual(['olivia', 'alice'])
+    expect(screen.queryByRole('button', { name: 'Start' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Organizer board' })).toBeNull()
   })
 })

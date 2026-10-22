@@ -129,6 +129,22 @@ public class SessionsApiTests
     }
 
     [Fact]
+    public async Task Start_WithTheDefaultRules_NeedsTwoOnlinePlayers()
+    {
+        using var factory = new QuizApiFactory { MinPlayersToStart = null }; // the shipped config, not the test default
+        var (quizId, organizer) = await factory.AddLobbyAsync();
+        await factory.JoinAsync(quizId, organizer, "org"); // the organizer plays too
+        var client = await factory.LoginAsync("org");
+
+        var alone = await client.PostAsync($"/api/sessions/{quizId}/start", null);
+        await factory.JoinAsync(quizId, await factory.AddUserAsync("alice"), "alice");
+        var withTwo = await client.PostAsync($"/api/sessions/{quizId}/start", null);
+
+        Assert.Equal((HttpStatusCode.Conflict, "NoPlayers"), (alone.StatusCode, await ProblemTitleAsync(alone)));
+        Assert.Equal(HttpStatusCode.OK, withTwo.StatusCode);
+    }
+
+    [Fact]
     public async Task Start_Twice_Returns409()
     {
         using var factory = new QuizApiFactory();
@@ -167,7 +183,7 @@ public class SessionsApiTests
         var bob = await factory.AddUserAsync("bob");
         await factory.JoinAsync(quizId, alice, "alice");
         await factory.JoinAsync(quizId, bob, "bob");
-        await factory.Registry.AskAsync(quizId, (s, call) => { s.Start(organizer, call.Now); return 0; });
+        await factory.Registry.AskAsync(quizId, (s, call) => { s.Start(organizer, call.Now, call.Rules); return 0; });
         await AnswerAsync(factory, quizId, bob, "a", after: TimeSpan.FromSeconds(3));   // 900
         await AnswerAsync(factory, quizId, alice, "b", after: TimeSpan.FromSeconds(4)); // wrong; all answered -> closed
         var client = await factory.LoginAsync("alice");
@@ -186,7 +202,7 @@ public class SessionsApiTests
         var alice = await factory.AddUserAsync("alice");
         await factory.JoinAsync(quizId, alice, "alice");
         await factory.JoinAsync(quizId, await factory.AddUserAsync("bob"), "bob");
-        await factory.Registry.AskAsync(quizId, (s, call) => { s.Start(organizer, call.Now); return 0; });
+        await factory.Registry.AskAsync(quizId, (s, call) => { s.Start(organizer, call.Now, call.Rules); return 0; });
         await AnswerAsync(factory, quizId, alice, "a", after: TimeSpan.FromSeconds(1)); // bob has not answered: still open
         var client = await factory.LoginAsync("alice");
 

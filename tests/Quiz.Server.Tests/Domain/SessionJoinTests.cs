@@ -32,12 +32,14 @@ public class SessionJoinTests
     }
 
     [Fact]
-    public void Join_Organizer_IsRejected()
+    public void Join_Organizer_PlaysLikeAnyoneElse()
     {
         var session = NewSession();
 
-        Assert.Equal(SessionError.IsOrganizer, ErrorOf(() => session.Join(Organizer, "org", Conn(9), T0, Rules)));
-        Assert.Empty(session.Players);
+        var outcome = session.Join(Organizer, "org", Conn(9), T0, Rules);
+
+        Assert.Equal((Organizer, false), (Assert.Single(session.Players).UserId, outcome.Rejoined));
+        Assert.Equal(new PlayerJoined(Organizer, "org", 1), Assert.Single(session.Events));
     }
 
     [Fact]

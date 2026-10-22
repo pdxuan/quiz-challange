@@ -7,7 +7,9 @@ internal static class DomainBuilders
 {
     public static readonly DateTimeOffset T0 = new(2026, 1, 1, 9, 0, 0, TimeSpan.Zero);
     public static readonly Guid Organizer = Guid.Parse("00000000-0000-0000-0000-00000000000a");
-    public static readonly SessionRules Rules = new(Capacity: 20, RevealDuration: TimeSpan.FromSeconds(5));
+    /// <summary>One online player may start, so single-player scenarios stay small; the production minimum is tested with <see cref="TwoToStart"/>.</summary>
+    public static readonly SessionRules Rules = new(Capacity: 20, RevealDuration: TimeSpan.FromSeconds(5), MinPlayersToStart: 1);
+    public static readonly SessionRules TwoToStart = Rules with { MinPlayersToStart = 2 };
     public static readonly TimeSpan Limit = TimeSpan.FromSeconds(15);
 
     public static QuizSet QuizSet(int questions = 3, int timeLimitSec = 15)
@@ -52,7 +54,7 @@ internal static class DomainBuilders
     public static Session Running(int count, int questions = 3)
     {
         var session = Lobby(count, questions);
-        session.Start(Organizer, T0);
+        session.Start(Organizer, T0, Rules);
         session.ClearEvents();
         return session;
     }

@@ -46,7 +46,7 @@ internal static class SessionsEndpoints
         {
             var state = await registry.AskAsync(quizId, (session, call) =>
             {
-                session.Start(organizer, call.Now);
+                session.Start(organizer, call.Now, call.Rules);
                 return session.State;
             });
             return Results.Ok(new StartedSessionResponse(state.ToString()));

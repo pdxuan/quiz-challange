@@ -11,8 +11,11 @@ public sealed class SessionOptions
 
     public double RevealSeconds { get; set; } = 5;
 
+    /// <summary>Online players needed before the organizer may start (the organizer counts when playing).</summary>
+    public int MinPlayersToStart { get; set; } = 2;
+
     /// <summary>How often each live session's clock checks deadlines.</summary>
     public int TickMilliseconds { get; set; } = 100;
 
-    public SessionRules ToRules() => new(Capacity, TimeSpan.FromSeconds(RevealSeconds));
+    public SessionRules ToRules() => new(Capacity, TimeSpan.FromSeconds(RevealSeconds), MinPlayersToStart);
 }

@@ -18,7 +18,7 @@ public class SessionActorTests
         var bob = await factory.AddUserAsync("bob");
         await factory.JoinAsync(quizId, alice, "alice");
         await factory.JoinAsync(quizId, bob, "bob");
-        await factory.Registry.AskAsync(quizId, (s, call) => { s.Start(organizer, call.Now); return 0; });
+        await factory.Registry.AskAsync(quizId, (s, call) => { s.Start(organizer, call.Now, call.Rules); return 0; });
         return (quizId, organizer, alice, bob);
     }
 
