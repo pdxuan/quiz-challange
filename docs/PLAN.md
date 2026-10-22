@@ -65,7 +65,7 @@ non-overlapping files and may run in parallel worktrees.
   - Done when: the test command is green; the migration SQL is read line by line in the PR.
   - Decision: interviewer, 2026-10-22: `Options` key is `(QuestionId, OptionId)` with a composite FK from `Answers`; `Questions.CorrectOptionId` has no FK (checked by the S6 seed validator). Deny by default: an authorization fallback policy requires a logged-in user; login, logout, health, OpenAPI and the SPA/404 fallbacks are `AllowAnonymous`. `User` lives in `Data/`. Review fixes (picked by the interviewer): every `DateTimeOffset` is stored as UTC (converter); busy timeout is explicit (5 s); `Answers` has no FK to `Questions` (the composite FK to `Options` implies it); `Sessions -> QuizSets/Users`, `Players -> Users` and `Answers -> Options` are `RESTRICT` so history cannot be deleted by accident. AC4 here is proven for `/api/auth/me`; S3 (sessions), S4 (hub) and S6 (quiz sets) each add an anonymous -> 401 test for their own endpoints.
 
-- [ ] **S3 Session actor and sessions API** - TRUNK
+- [x] **S3 Session actor and sessions API** - TRUNK
   - Branch: feature/s3-session-actor-api
   - Covers: R5, R7, AC7, AC8 (status and stored state), AC9, AC28, AC29
   - Files: `src/Quiz.Server/Runtime/**` (`SessionActor`, `SessionMessage` types, `SessionRegistry`, `SessionRecoveryService`, `SessionOptions`, `ISessionEvents` port that S4 implements over SignalR, registration extension); `src/Quiz.Server/Features/Sessions/**`; `tests/Quiz.Server.Tests/Runtime/**`, `tests/Quiz.Server.Tests/Features/Sessions/**`; `docs/ai-collab/s3.md`
@@ -73,7 +73,7 @@ non-overlapping files and may run in parallel worktrees.
   - Depends on: S2
   - Tests: create 201 + Location with a stored Lobby row, unknown set 404, missing id 400 (AC7); start by organizer 200 and Running stored, other user 403, no players / second start 409, unknown 404 (AC8; players joined by posting `Join` through `SessionRegistry` in the arrange step); leaderboard ordered from SQLite, 404 (AC9); `Tick` with `FakeTimeProvider` closes the question, reveals and advances (rows checked in SQLite); a throwing message rolls back, returns a code, logs quizId, and the next message works (AC28); a new host on the same SQLite file resumes a Running session, closes the overdue question and starts the next, players offline (AC29); concurrent `Answer` messages from one player store one row
   - Done when: the test command is green; the actor never awaits a push inside its loop (checked in review).
-  - Decision: (written while building, if any)
+  - Decision: interviewer, 2026-10-22: while a question is open the leaderboard leaves out that question's points (`Session.Leaderboard()`, shared with S4). A call is a function `(Session, SessionCall) -> T` posted to the actor; ticks are coalesced; the actor stops when the session is not Running (Lobby or Finished), is missing, or failed 3 calls in a row, and leaves the registry only after its queue drained (one writer per session). Interviewer: a restart during a reveal gives a full reveal from the restart (`Session.Resume`) so players can rejoin. Error codes are the ProblemDetails title. Also touched (TRUNK): `Domain/` (leaderboard rule, `QuizNotFound`), `TestHost/` (fake time, event recorder, log capture, restart), `Program.cs` (`AddQuizRuntime`), test package `TimeProvider.Testing` (approved).
 
 - [ ] **S4 Quiz hub and real-time events** - TRUNK
   - Branch: feature/s4-quiz-hub

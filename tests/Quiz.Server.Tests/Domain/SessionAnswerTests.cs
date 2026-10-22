@@ -191,6 +191,35 @@ public class SessionAnswerTests
     }
 
     [Fact]
+    public void Leaderboard_WhileTheQuestionIsOpen_LeavesOutItsPoints()
+    {
+        var session = Running(3, questions: 2);
+        session.Answer(2, "a", TimeSpan.FromSeconds(1)); // q1: player02 first
+        session.Answer(1, "a", TimeSpan.FromSeconds(2));
+        session.Answer(3, "b", TimeSpan.FromSeconds(3)); // all answered -> closed
+        session.Tick(T0.AddSeconds(8), Rules);           // q2 starts at T0+8
+        session.SubmitAnswer(User(3), "q2", "a", Guid.NewGuid(), T0.AddSeconds(9), T0.AddSeconds(9), Rules);
+
+        var board = session.Leaderboard();
+
+        // player03's q2 points are hidden until q2 closes: still 0, ranked by join time like before.
+        Assert.Equal([(Name(2), 967, 1), (Name(1), 933, 2), (Name(3), 0, 3)],
+            board.Select(r => (r.Player.DisplayName, r.TotalPoints, r.Rank)));
+    }
+
+    [Fact]
+    public void Leaderboard_AfterTheQuestionCloses_ShowsItsPoints()
+    {
+        var session = Running(2, questions: 2);
+        session.Answer(1, "b", TimeSpan.FromSeconds(1));
+        session.Answer(2, "a", TimeSpan.FromSeconds(2)); // closes q1
+
+        var board = session.Leaderboard();
+
+        Assert.Equal([(Name(2), 933), (Name(1), 0)], board.Select(r => (r.Player.DisplayName, r.TotalPoints)));
+    }
+
+    [Fact]
     public void SubmitAnswer_TwentyPlayers_TotalsAndRanksMatchTheExpectedValues()
     {
         var session = Running(20, questions: 1);

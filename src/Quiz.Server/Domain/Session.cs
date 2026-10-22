@@ -50,7 +50,34 @@ public class Session
 
     public void ClearEvents() => _events.Clear();
 
-    public IReadOnlyList<RankedPlayer> Leaderboard() => Ranking.Rank(Players);
+    /// <summary>
+    /// The board anyone may see. While a question is open its points stay hidden (results show
+    /// only when it closes), so each player is ranked as they stood before it. Needs every answer
+    /// of the session loaded.
+    /// </summary>
+    public IReadOnlyList<RankedPlayer> Leaderboard()
+    {
+        if (Phase != SessionPhase.Question)
+        {
+            return Ranking.Rank(Players);
+        }
+
+        var open = CurrentQuestion!.Id;
+        return Ranking.RankStandings(Players.Select(p =>
+        {
+            var hidden = Answers.FirstOrDefault(a => a.UserId == p.UserId && a.QuestionId == open);
+            if (hidden is null || hidden.Points == 0)
+            {
+                return (p, p.TotalPoints, p.ReachedAt);
+            }
+            var reachedBefore = Answers
+                .Where(a => a.UserId == p.UserId && a.QuestionId != open && a.Points > 0)
+                .Select(a => a.ReceivedAt)
+                .DefaultIfEmpty(p.JoinedAt)
+                .Max();
+            return (p, p.TotalPoints - hidden.Points, reachedBefore);
+        }));
+    }
 
     public void EnsureOrganizer(Guid userId)
     {
@@ -251,6 +278,20 @@ public class Session
         else
         {
             StartQuestion(CurrentIndex + 1, now);
+        }
+    }
+
+    /// <summary>
+    /// After a server restart: everyone is offline, and a reveal lasts at least one full reveal
+    /// from now, so players have a window to rejoin before the next question (or the finish).
+    /// An overdue question is left to the next <see cref="Tick"/>, which closes it and starts a reveal.
+    /// </summary>
+    public void Resume(DateTimeOffset now, SessionRules rules)
+    {
+        MarkAllOffline();
+        if (State == SessionState.Running && Phase == SessionPhase.Reveal && PhaseEndsAt < now + rules.RevealDuration)
+        {
+            PhaseEndsAt = now + rules.RevealDuration;
         }
     }
 
