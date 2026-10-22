@@ -113,6 +113,18 @@ Parallel math (minutes, estimates): S5 = 40, S6 = 30. Sequential = 70; parallel 
 max(40, 30) + 2 setup + 2 x 3 apply = 48, saving about 22. Run `/build S5 S6` after S4 is
 merged. S0-S4 run one at a time in the main session (about 25 + 25 + 25 + 30 + 40 = 145).
 
+### Fixes
+
+- [x] **S7 One quiz per hub connection** - TRUNK
+  - Branch: bugfix/s7-one-quiz-per-connection
+  - Covers: AC24 (all-offline finish), post-review Should #1
+  - Files: `src/Quiz.Server/Features/Play/QuizHub.cs`; `tests/Quiz.Server.Tests/Features/Play/QuizHubTests.cs`
+  - Read first: `QuizHub.cs` `OnDisconnectedAsync` and `Context.Items[PlayerQuizKey]` in `JoinQuiz`
+  - Depends on: S6
+  - Tests: a connection that joined quiz A and calls `JoinQuiz(B)` gets `Invalid`, is not added to B, and its disconnect still finishes A when it was A's only player (AC24); `JoinQuiz(A)` again on the same connection is the same player.
+  - Done when: the test command is green.
+  - Decision: interviewer, 2026-10-22: one connection plays at most one quiz; a join for another quiz fails with `Invalid` (already a `JoinQuiz` code, so the web needs no change). Rejected: a set of quiz ids per connection (a state the SPA never creates).
+
 ## Decisions
 
 Written by `/plan` only. A decision made while building goes into that slice's block.

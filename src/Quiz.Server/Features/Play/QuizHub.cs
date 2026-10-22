@@ -46,6 +46,10 @@ public sealed class QuizHub(SessionRegistry registry, TimeProvider time, QuizMet
     public async Task<JoinResult> JoinQuiz(string quizId)
     {
         var id = QuizIdGenerator.Normalize(quizId ?? "");
+        if (Context.Items.TryGetValue(PlayerQuizKey, out var joined) && joined is string current && current != id)
+        {
+            throw new HubException("Invalid"); // one quiz per connection, so a disconnect reaches the quiz it played
+        }
         var (userId, username) = Caller();
         var connectionId = Context.ConnectionId;
 
