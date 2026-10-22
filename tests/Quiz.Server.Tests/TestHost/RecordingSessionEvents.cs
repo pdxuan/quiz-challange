@@ -4,10 +4,12 @@ using Quiz.Server.Runtime;
 
 namespace Quiz.Server.Tests.TestHost;
 
-/// <summary>Stands in for the SignalR transport (S4): records what the actor publishes after each commit.</summary>
+/// <summary>Records what the actor publishes after each commit, then passes it on to the real transport (SignalR).</summary>
 public sealed class RecordingSessionEvents : ISessionEvents
 {
     private readonly ConcurrentQueue<(string QuizId, SessionEvent Event)> _published = new();
+
+    public ISessionEvents? Inner { get; set; }
 
     public void Publish(Session session, IReadOnlyList<SessionEvent> events)
     {
@@ -15,6 +17,7 @@ public sealed class RecordingSessionEvents : ISessionEvents
         {
             _published.Enqueue((session.QuizId, e));
         }
+        Inner?.Publish(session, events);
     }
 
     public IReadOnlyList<SessionEvent> For(string quizId) =>

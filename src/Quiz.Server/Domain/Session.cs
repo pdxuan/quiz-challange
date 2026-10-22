@@ -305,6 +305,9 @@ public class Session
         }
     }
 
+    /// <summary>How many eligible players have answered the open question (for the organizer view).</summary>
+    public (int Answered, int Eligible) CurrentAnswerCounts() => AnswerCounts(CurrentQuestion!);
+
     private Player? FindPlayer(Guid userId) => Players.FirstOrDefault(p => p.UserId == userId);
 
     /// <summary>Online and in the session before the current question started.</summary>
